@@ -1,3 +1,4 @@
+
 name: earthlink_vip
 description: "بوابة مشتركي إيرثلنك الفاخرة - Earthlink VIP Flutter Application"
 publish_to: "none"
@@ -23,7 +24,7 @@ dependencies:
 
   # Icons & UI Polish
   lucide_icons: ^0.257.0
-  intl: ^0.19.0
+  intl: ^0.20.3
   flutter_animate: ^4.5.0
 
 dev_dependencies:
