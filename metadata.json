@@ -1,0 +1,6 @@
+{
+  "name": "Earthlink VIP Subscriber Portal",
+  "description": "بوابة مشتركي إيرثلنك الفاخرة - إدارة الاشتراكات، العداد المائي، التقارير الفورية، وتنبيهات الديسكورد وتلجرام.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,66 @@
+name: Earthlink 24/7 Subscriber Alert Dispatcher
+
+# ==============================================================================
+# ملف تشغيل وإرسال التنبيهات المربوط بقسم التنبيهات (Dynamic Alert Dispatcher)
+# تم توليده وتحديثه تلقائياً بناءً على موعد التنبيه المختار في التطبيق:
+# الموعد: يوم 28 الساعة 09:45 مساءً (بتوقيت بغداد UTC+3)
+# التوقيت المقابل العالمي (UTC): 45 18
+# المشترك: مشترك تجريبي إيرثلنك (@earthlink_user)
+# بصمة الهاتف: FP-TEST-001 (Samsung Galaxy S24 Ultra)
+# قناة الإرسال: both
+# ==============================================================================
+
+on:
+  # 1. الموعد المجدول الدقيق المحسوب من قسم التنبيهات (بتوقيت بغداد)
+  schedule:
+    - cron: '45 18 28 * *'
+    # فحص دوري كل ساعة للتأكد من المزامنة
+    - cron: '0 * * * *'
+
+  # 2. تشغيل فوري بأي وقت من GitHub (Run workflow)
+  workflow_dispatch:
+    inputs:
+      force_send:
+        description: 'إرسال التنبيه فوراً الآن وتخطي انتظار الموعد'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  check-and-dispatch:
+    name: Fetch Live Earthlink Data & Dispatch Alerts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Runtime
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Execute Live Earthlink Alert Runner
+        run: node scripts/github_alert_runner.js
+        env:
+          # بيانات المشترك والتوكن
+          EARTHLINK_USERNAME: ${{ secrets.EARTHLINK_USERNAME || 'earthlink_user' }}
+          EARTHLINK_PASSWORD: ${{ secrets.EARTHLINK_PASSWORD }}
+          EARTHLINK_TOKEN: ${{ secrets.EARTHLINK_TOKEN }}
+
+          # قنوات الإرسال المباشرة
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+          # إعدادات التنبيه المأخوذة مباشرة من قسم التنبيهات
+          ALERT_DAY: '${{ secrets.ALERT_DAY || '28' }}'
+          ALERT_TIME: '${{ secrets.ALERT_TIME || '09:45 PM' }}'
+          ALERT_CHANNEL: '${{ secrets.ALERT_CHANNEL || 'both' }}'
+          ALERT_DAYS_LEFT_THRESHOLD: '${{ secrets.ALERT_DAYS_LEFT_THRESHOLD || '3' }}'
+          ALERT_DEVICE_FINGERPRINT: 'FP-TEST-001'
+
+          # خيار الإرسال الفوري
+          FORCE_SEND: ${{ inputs.force_send || 'false' }}
+          TIMEZONE: 'Asia/Baghdad'
