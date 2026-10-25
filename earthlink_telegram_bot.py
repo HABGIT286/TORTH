@@ -801,22 +801,12 @@ def run_scheduled():
 import base64
 import time
 
-# Values are supplied by GitHub Actions Secrets / workflow environment.
-# GITHUB_TOKEN should be passed as ${{ github.token }} in bot.yml.
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
 OWNER_TELEGRAM_ID = os.environ.get("OWNER_TELEGRAM_ID", "").strip()
-WELCOME_IMAGE_URL = os.environ.get("WELCOME_IMAGE_URL", "").strip()
+WELCOME_IMAGE_URL = os.environ.get("WELCOME_IMAGE_URL", "").strip()  # add your image URL later
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "").strip()
-# Accept both our explicit variable and GitHub Actions' built-in repository name.
-GITHUB_REPO = (
-    os.environ.get("GITHUB_REPO", "").strip()
-    or os.environ.get("GITHUB_REPOSITORY", "").strip()
-)
-GITHUB_BRANCH = (
-    os.environ.get("GITHUB_BRANCH", "").strip()
-    or os.environ.get("GITHUB_REF_NAME", "").strip()
-    or "main"
-)
+GITHUB_REPO = os.environ.get("GITHUB_REPO", "").strip()  # example: owner/repository
+GITHUB_BRANCH = os.environ.get("GITHUB_BRANCH", "main").strip() or "main"
 DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "").strip()
 
 BOT_API = "https://api.telegram.org/bot" + BOT_TOKEN
@@ -919,10 +909,8 @@ def github_publish_schedule(config):
     """Commit schedule.yml through GitHub Contents API; no credentials are stored in YAML."""
     if not GITHUB_TOKEN or not GITHUB_REPO or "/" not in GITHUB_REPO:
         raise AppError(
-            "لم تُضبط إعدادات GitHub اللازمة لحفظ الموعد. مرّر GITHUB_TOKEN "
-            "(الأفضل ${{ github.token }} داخل GitHub Actions)، وGITHUB_REPO "
-            "أو GITHUB_REPOSITORY، وGITHUB_BRANCH أو GITHUB_REF_NAME. "
-            "لم يُرفع الموعد إلى GitHub."
+            "حتى يبقى الموعد يعمل بعد إغلاق الهاتف، اضبط GITHUB_TOKEN وGITHUB_REPO "
+            "وGITHUB_BRANCH في بيئة تشغيل البوت. لم يُرفع الموعد إلى GitHub."
         )
     api_url = "https://api.github.com/repos/" + GITHUB_REPO + "/contents/schedule.yml"
     headers = {
@@ -953,10 +941,7 @@ def github_publish_schedule(config):
     except requests.RequestException as exc:
         raise AppError("فشل الاتصال بـ GitHub: " + str(exc))
     if not response.ok:
-        detail = response.text[:350]
-        if response.status_code in (401, 403):
-            detail += " | تحقق من صلاحية contents: write في bot.yml وإعدادات Workflow permissions."
-        raise AppError("لم يتم حفظ الموعد في GitHub: HTTP " + str(response.status_code) + " " + detail)
+        raise AppError("لم يتم حفظ الموعد في GitHub: HTTP " + str(response.status_code) + " " + response.text[:350])
 
 
 def send_discord(webhook_url, messages):
