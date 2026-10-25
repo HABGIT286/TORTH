@@ -61,10 +61,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
 
       - name: 🛠️ Install NPM Dependencies
-        run: npm ci || npm install
+        run: npm install --legacy-peer-deps
 
       - name: 🏗️ Build Production Web App
         run: npm run build
@@ -75,6 +74,9 @@ jobs:
           mkdir -p android/app/src/main/res/drawable
           mkdir -p android/app/src/main/assets/public
           mkdir -p android/app/src/main/java/iq/earthlink/subscriber
+
+          # ضبط مسار الـ SDK الرسمي لـ Gradle
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
           # نسخ ملفات واجهة الويب المجمعة إلى مجلد الأصول داخل التطبيق
           cp -r dist/* android/app/src/main/assets/public/
@@ -295,12 +297,12 @@ jobs:
         working-directory: android
         run: |
           echo "🔨 بدء تجميع APK بواسطة Gradle 8.7..."
-          gradle assembleRelease --stacktrace || gradle assembleDebug --stacktrace
+          gradle assembleRelease --stacktrace || gradle assembleDebug --stacktrace || gradle assemble --stacktrace
 
       - name: 📦 Locate and Rename APK
         run: |
           mkdir -p release-output
-          APK_FILE=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
+          APK_FILE=$(find android/ -name "*.apk" | head -n 1)
           if [ -n "$APK_FILE" ]; then
             cp "$APK_FILE" release-output/Earthlink-VIP-Android15.apk
             echo "✅ تم العثور على ملف APK وحفظه: $APK_FILE -> release-output/Earthlink-VIP-Android15.apk"
