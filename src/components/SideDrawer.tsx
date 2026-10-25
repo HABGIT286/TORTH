@@ -1,24 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SubscriberData, AppTab } from '../types/earthlink';
 import { playHapticSound, triggerLuxuryCelebration, createClickRipple } from '../utils/effects';
 import { AnimatedIcon } from './AnimatedIcon';
 import {
-  X,
-  User,
-  Settings,
+  LayoutDashboard,
+  Cpu,
+  UserCheck,
+  CreditCard,
+  Activity,
+  Bell,
+  Smartphone,
   Palette,
   MessageCircle,
   Share2,
   Info,
   LogOut,
+  Settings,
+  Moon,
+  Sun,
+  Plus,
+  Search,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Sparkles,
   Send,
   Check,
   Copy,
   ExternalLink,
-  ChevronLeft,
-  Smartphone,
-  Cpu,
-  Sparkles
+  ShieldCheck,
+  Zap,
+  Globe
 } from 'lucide-react';
 
 interface SideDrawerProps {
@@ -27,10 +41,13 @@ interface SideDrawerProps {
   onNavigateTab: (tab: AppTab) => void;
   onLogout: () => void;
   onOpenInstallModal?: () => void;
+  onOpenGithubApkModal?: () => void;
+  onToggleThemeMode?: () => void;
   data: SubscriberData;
   userAvatar?: string;
   userUUID: string;
   t: Record<string, string>;
+  hasActiveAlert?: boolean;
 }
 
 export const SideDrawer: React.FC<SideDrawerProps> = ({
@@ -39,17 +56,143 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   onNavigateTab,
   onLogout,
   onOpenInstallModal,
+  onOpenGithubApkModal,
+  onToggleThemeMode,
   data,
   userAvatar,
   userUUID,
-  t
+  t,
+  hasActiveAlert = false
 }) => {
+  // Collapsed vs Expanded Mode (like Screenshot 1 vs Screenshot 2)
+  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeModal, setActiveModal] = useState<'none' | 'contact' | 'social' | 'about'>('none');
+
+  // Contact form state
   const [contactName, setContactName] = useState('');
   const [contactMessage, setContactMessage] = useState('');
   const [isSendingContact, setIsSendingContact] = useState(false);
   const [contactSent, setContactSent] = useState(false);
   const [copiedDiscord, setCopiedDiscord] = useState(false);
+
+  // List of navigation items matching the screenshot structure
+  const menuItems = useMemo(() => [
+    {
+      id: 'dashboard',
+      titleAr: 'لوحة التحكم الرئيسية',
+      titleEn: 'Dashboard',
+      icon: LayoutDashboard,
+      badge: null,
+      tab: 'data' as AppTab,
+      highlight: true
+    },
+    {
+      id: 'ai-brain',
+      titleAr: 'محرك الذكاء الاصطناعي (AI)',
+      titleEn: 'AI Intelligence',
+      icon: Cpu,
+      badge: 'AI VIP',
+      tab: 'ai' as AppTab,
+      highlight: false
+    },
+    {
+      id: 'account',
+      titleAr: 'بيانات المشترك والاشتراك',
+      titleEn: 'Customers & Account',
+      icon: UserCheck,
+      badge: null,
+      tab: 'data' as AppTab,
+      highlight: false
+    },
+    {
+      id: 'network',
+      titleAr: 'فحص جودة وسرعة النت (5G)',
+      titleEn: 'Tickets & Speed',
+      icon: Activity,
+      badge: '185M',
+      tab: 'data' as AppTab,
+      highlight: false
+    },
+    {
+      id: 'alerts',
+      titleAr: 'جدولة التنبيهات والأتمتة',
+      titleEn: 'Tasks & Alerts',
+      icon: Bell,
+      badge: hasActiveAlert ? 'نشط 2' : '2',
+      badgeColor: 'bg-blue-500 text-white',
+      tab: 'alerts' as AppTab,
+      highlight: false
+    },
+    {
+      id: 'apk-android15',
+      titleAr: 'تطبيق أندرويد 15 (APK / ERTH)',
+      titleEn: 'Android 15 APK',
+      icon: Smartphone,
+      badge: 'ERTH',
+      badgeColor: 'bg-emerald-500 text-slate-950',
+      action: () => {
+        if (onOpenGithubApkModal) onOpenGithubApkModal();
+        else if (onOpenInstallModal) onOpenInstallModal();
+      },
+      highlight: false
+    },
+    {
+      id: 'themes',
+      titleAr: 'مظهر وثيمات الواجهة الفخمة',
+      titleEn: 'Themes & Styles',
+      icon: Palette,
+      badge: '12',
+      tab: 'settings' as AppTab,
+      highlight: false
+    },
+    {
+      id: 'settings',
+      titleAr: 'إعدادات النظام والخطوط',
+      titleEn: 'System Settings',
+      icon: Settings,
+      badge: null,
+      tab: 'settings' as AppTab,
+      highlight: false
+    },
+    {
+      id: 'support',
+      titleAr: 'الدعم الفني وتواصل مع الإدارة',
+      titleEn: 'Support & Help',
+      icon: MessageCircle,
+      badge: null,
+      action: () => setActiveModal('contact'),
+      highlight: false
+    },
+    {
+      id: 'social',
+      titleAr: 'قنوات ومواقع التواصل',
+      titleEn: 'Social Media',
+      icon: Share2,
+      badge: null,
+      action: () => setActiveModal('social'),
+      highlight: false
+    },
+    {
+      id: 'about',
+      titleAr: 'حول التطبيق والإصدار',
+      titleEn: 'About Application',
+      icon: Info,
+      badge: 'v3.0',
+      action: () => setActiveModal('about'),
+      highlight: false
+    }
+  ], [hasActiveAlert, onOpenGithubApkModal, onOpenInstallModal]);
+
+  // Filter items by search query
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return menuItems;
+    const q = searchQuery.toLowerCase().trim();
+    return menuItems.filter(item =>
+      item.titleAr.toLowerCase().includes(q) ||
+      item.titleEn.toLowerCase().includes(q)
+    );
+  }, [menuItems, searchQuery]);
 
   if (!isOpen) return null;
 
@@ -105,238 +248,229 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
         className="absolute inset-0 bg-black/75 backdrop-blur-md transition-opacity"
       />
 
-      {/* Drawer Container with Clay & Neumorphic Edge */}
-      <div className="relative w-80 max-w-[85vw] h-full bg-slate-950/95 border-l border-white/10 p-5 flex flex-col shadow-2xl z-10 backdrop-blur-2xl overflow-y-auto animate-in slide-in-from-right-8 duration-300">
+      {/* Main Floating Sidebar styled strictly matching the user's screenshot */}
+      <motion.div
+        layout
+        initial={{ opacity: 0, x: 60 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 60 }}
+        transition={{ type: 'spring', stiffness: 380, damping: 28 }}
+        className={`relative h-full my-auto sm:my-3 sm:mr-3 sm:rounded-[36px] bg-gradient-to-b from-white/95 via-slate-50/95 to-slate-100/95 dark:from-[#0f0b1a]/95 dark:via-[#090514]/95 dark:to-[#04020a]/98 text-slate-800 dark:text-white border-l sm:border border-slate-200/80 dark:border-purple-500/30 p-4 flex flex-col shadow-2xl z-10 backdrop-blur-2xl transition-all duration-300 select-none overflow-hidden ${
+          isCollapsed ? 'w-20' : 'w-76 max-w-[88vw]'
+        }`}
+      >
         {/* Shimmer sweep layer */}
         <div className="shimmer-sweep-layer" />
 
-        {/* Drawer Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-4 relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 to-cyan-500 p-0.5 shadow-md shadow-purple-950/50">
-              <img
-                src={userAvatar || data.accountImagePath || 'https://user.earthlink.iq/accountImages/138.png'}
-                alt="User"
-                className="w-full h-full rounded-[14px] object-cover bg-slate-900"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = 'https://user.earthlink.iq/accountImages/138.png';
-                }}
-              />
+        {/* 1. Header Profile Pill (as in Screenshot 1) */}
+        <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/70 dark:border-white/10 mb-3 relative z-10">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {/* Avatar */}
+            <div className="relative group shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-500 via-indigo-600 to-purple-600 p-0.5 shadow-md shadow-blue-500/20">
+                <img
+                  src={userAvatar || data.accountImagePath || 'https://user.earthlink.iq/accountImages/138.png'}
+                  alt="User"
+                  className="w-full h-full rounded-[14px] object-cover bg-slate-900"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = 'https://user.earthlink.iq/accountImages/138.png';
+                  }}
+                />
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-950" />
             </div>
-            <div>
-              <div className="text-sm font-bold text-white leading-tight font-titles">
-                {data.fullName}
-              </div>
-              <div className="text-[11px] font-mono text-purple-400">
-                @{data.userID}
-              </div>
-            </div>
-          </div>
 
-          <button
-            onClick={(e) => { createClickRipple(e); playHapticSound('tap'); onClose(); }}
-            className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer tap-interactive"
-          >
-            <AnimatedIcon icon={X} size="sm" className="text-slate-400" />
-          </button>
-        </div>
-
-        {/* Main Menu Links */}
-        <div className="space-y-2 flex-1 relative z-10">
-          {/* 0. تثبيت تطبيق أندرويد (APK) */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              onClose();
-              if (onOpenInstallModal) onOpenInstallModal();
-            }}
-            className="clay-btn w-full p-3 rounded-2xl bg-gradient-to-r from-emerald-500/25 via-teal-500/20 to-cyan-500/25 hover:from-emerald-500/35 hover:to-cyan-500/35 text-white flex items-center justify-between transition-all border border-emerald-500/40 group cursor-pointer tap-interactive shadow-lg shadow-emerald-950/40"
-          >
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-400/40">
-                <AnimatedIcon icon={Smartphone} size="sm" className="text-emerald-400 animate-pulse" />
-              </div>
-              <div className="text-right">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-xs font-black font-titles text-emerald-300">
-                    تثبيت تطبيق أندرويد (APK)
-                  </span>
-                  <span className="text-[9px] px-1.5 py-0.2 bg-emerald-500 text-slate-950 font-black rounded-full">
-                    مباشر
+            {/* User Title & Role (hidden in collapsed mode) */}
+            {!isCollapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white truncate font-titles">
+                    {data.fullName || 'جعفر حيدر'}
+                  </h3>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] text-blue-600 dark:text-cyan-400 font-mono font-bold">
+                    Admin / مشترك VIP
                   </span>
                 </div>
-                <span className="text-[10px] text-slate-400 font-hints block">
-                  تثبيت كـ تطبيق أصلي للجوال
-                </span>
               </div>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-emerald-400" />
-          </button>
+            )}
+          </div>
 
-          {/* محرك الذكاء الاصطناعي (AI) */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              onNavigateTab('ai');
-              onClose();
-            }}
-            className="clay-btn w-full p-3 rounded-2xl bg-gradient-to-r from-purple-500/20 via-indigo-500/15 to-cyan-500/20 hover:from-purple-500/30 hover:to-cyan-500/30 text-white flex items-center justify-between transition-all border border-purple-500/30 group cursor-pointer tap-interactive"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-cyan-300 flex items-center justify-center border border-purple-400/30">
-                <AnimatedIcon icon={Cpu} size="sm" className="text-cyan-300 animate-pulse" />
-              </div>
-              <div className="text-right">
-                <span className="text-xs font-bold font-titles text-white block">
-                  محرك الذكاء الاصطناعي (AI Brain)
-                </span>
-                <span className="text-[10px] text-purple-300 font-hints">
-                  تحليل الباندويث ورادار أوقات الذروة
-                </span>
-              </div>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-purple-400" />
-          </button>
+          {/* Expand/Collapse Toggle & Close Button */}
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                setIsCollapsed(!isCollapsed);
+              }}
+              title={isCollapsed ? 'توسيع القائمة' : 'تصغير القائمة إلى شريط جانبي'}
+              className="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer tap-interactive"
+            >
+              {isCollapsed ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </button>
 
-          {/* 1. حسابي */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              onNavigateTab('data');
-              onClose();
-            }}
-            className="neu-card w-full p-3 rounded-2xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-between transition-colors group cursor-pointer tap-interactive border border-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
-                <AnimatedIcon icon={User} size="sm" className="text-purple-400" />
-              </div>
-              <span className="text-xs font-bold font-titles">{t.myAccount}</span>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-slate-500" />
-          </button>
-
-          {/* 2. الإعدادات */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              onNavigateTab('settings');
-              onClose();
-            }}
-            className="neu-card w-full p-3 rounded-2xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-between transition-colors group cursor-pointer tap-interactive border border-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
-                <AnimatedIcon icon={Settings} size="sm" className="text-cyan-400" />
-              </div>
-              <span className="text-xs font-bold font-titles">{t.appSettings}</span>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-slate-500" />
-          </button>
-
-          {/* 3. ثيمات فخمة */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              onNavigateTab('settings');
-              onClose();
-            }}
-            className="neu-card w-full p-3 rounded-2xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-between transition-colors group cursor-pointer tap-interactive border border-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-pink-500/15 text-pink-400 flex items-center justify-center">
-                <AnimatedIcon icon={Palette} size="sm" className="text-pink-400" />
-              </div>
-              <span className="text-xs font-bold font-titles">{t.luxuryThemes} (12)</span>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-slate-500" />
-          </button>
-
-          {/* 4. تواصل مع الإدارة */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              setActiveModal('contact');
-            }}
-            className="neu-card w-full p-3 rounded-2xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-between transition-colors group cursor-pointer tap-interactive border border-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
-                <AnimatedIcon icon={MessageCircle} size="sm" className="text-amber-400" />
-              </div>
-              <span className="text-xs font-bold font-titles">{t.contactSupport}</span>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-slate-500" />
-          </button>
-
-          {/* 5. مواقع التواصل الاجتماعي */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              setActiveModal('social');
-            }}
-            className="neu-card w-full p-3 rounded-2xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-between transition-colors group cursor-pointer tap-interactive border border-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center">
-                <AnimatedIcon icon={Share2} size="sm" className="text-blue-400" />
-              </div>
-              <span className="text-xs font-bold font-titles">{t.socialMedia}</span>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-slate-500" />
-          </button>
-
-          {/* 6. حول التطبيق */}
-          <button
-            onClick={(e) => {
-              createClickRipple(e);
-              playHapticSound('tap');
-              setActiveModal('about');
-            }}
-            className="neu-card w-full p-3 rounded-2xl bg-black/40 hover:bg-black/60 text-white flex items-center justify-between transition-colors group cursor-pointer tap-interactive border border-white/5"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
-                <AnimatedIcon icon={Info} size="sm" className="text-emerald-400" />
-              </div>
-              <span className="text-xs font-bold font-titles">{t.aboutApp}</span>
-            </div>
-            <AnimatedIcon icon={ChevronLeft} size="sm" className="text-slate-500" />
-          </button>
+            {!isCollapsed && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  createClickRipple(e);
+                  playHapticSound('tap');
+                  onClose();
+                }}
+                className="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-500 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer tap-interactive"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* User Unique Code Badge */}
-        <div className="my-3 neu-inset p-3 rounded-2xl bg-black/50 border border-white/5 flex items-center justify-between relative z-10">
-          <span className="text-[11px] text-slate-400 font-hints">معرفك الفريد:</span>
-          <span className="font-mono text-xs font-bold text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
-            {userUUID}
-          </span>
+        {/* 2. Integrated Search Bar (as in Screenshot 1: "Search dashboard...") */}
+        {!isCollapsed && (
+          <div className="mb-3 relative z-10">
+            <div className="relative rounded-2xl bg-slate-100/90 dark:bg-black/50 border border-slate-200/80 dark:border-white/10 overflow-hidden flex items-center px-3 py-1.5 shadow-inner">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="البحث في لوحة التحكم..."
+                className="w-full bg-transparent text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none font-hints pr-1"
+              />
+              <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            </div>
+          </div>
+        )}
+
+        {/* 3. Navigation Items List (Smoothly animated, matching screenshot styling) */}
+        <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5 no-scrollbar relative z-10">
+          {filteredItems.map((item) => {
+            const Icon = item.icon;
+            const isHighlight = item.highlight && !searchQuery;
+
+            return (
+              <motion.button
+                key={item.id}
+                whileHover={{ scale: 1.02, x: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={(e) => {
+                  createClickRipple(e);
+                  playHapticSound('tap');
+                  if (item.action) {
+                    item.action();
+                  } else if (item.tab) {
+                    onNavigateTab(item.tab);
+                    onClose();
+                  }
+                }}
+                className={`w-full rounded-2xl transition-all cursor-pointer tap-interactive flex items-center justify-between text-right group ${
+                  isCollapsed ? 'p-2.5 justify-center' : 'px-3 py-2.5'
+                } ${
+                  isHighlight
+                    ? 'bg-blue-500/10 dark:bg-blue-600/20 text-blue-600 dark:text-blue-300 border border-blue-500/30 shadow-sm'
+                    : 'hover:bg-slate-100 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300'
+                }`}
+                title={item.titleAr}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
+                      isHighlight
+                        ? 'bg-blue-500 text-white shadow-md shadow-blue-500/40'
+                        : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 group-hover:bg-blue-500/15 group-hover:text-blue-500'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                  </div>
+
+                  {!isCollapsed && (
+                    <span className="text-xs font-bold font-titles truncate">
+                      {item.titleAr}
+                    </span>
+                  )}
+                </div>
+
+                {!isCollapsed && item.badge && (
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 font-numbers shadow-sm ${
+                      item.badgeColor || 'bg-blue-500 text-white'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </motion.button>
+            );
+          })}
         </div>
 
-        {/* Logout Button */}
-        <button
-          onClick={(e) => {
-            createClickRipple(e);
-            playHapticSound('tap');
-            onLogout();
-            onClose();
-          }}
-          className="clay-btn w-full p-3 rounded-2xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 flex items-center justify-center gap-2 text-xs font-bold transition-colors cursor-pointer tap-interactive font-titles relative z-10"
-        >
-          <AnimatedIcon icon={LogOut} size="sm" className="text-rose-400" />
-          <span>{t.logout}</span>
-        </button>
+        {/* 4. Bottom Toolbar: 4 rounded buttons in a row (as in Screenshot 1 & 2) */}
+        <div className="pt-3 border-t border-slate-200/70 dark:border-white/10 mt-2 relative z-10">
+          <div className="grid grid-cols-4 gap-1.5">
+            {/* Button 1: Dark/Light Mode Moon/Sun */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('switch');
+                if (onToggleThemeMode) onToggleThemeMode();
+              }}
+              title="تبديل النمط المظلم / الفاتح"
+              className="h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer tap-interactive"
+            >
+              <Moon className="w-4 h-4" />
+            </button>
+
+            {/* Button 2: Settings Cog */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                onNavigateTab('settings');
+                onClose();
+              }}
+              title="إعدادات التطبيق"
+              className="h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-all cursor-pointer tap-interactive"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
+            {/* Button 3: Quick Action (+) */}
+            <button
+              type="button"
+              onClick={() => {
+                playHapticSound('tap');
+                if (onOpenGithubApkModal) onOpenGithubApkModal();
+                else onNavigateTab('alerts');
+                onClose();
+              }}
+              title="تجميع APK أندرويد 15 وتنبيه فوري (+)"
+              className="h-10 rounded-2xl bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center transition-all cursor-pointer tap-interactive shadow-md shadow-blue-500/30"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+
+            {/* Button 4: Logout / Exit */}
+            <button
+              type="button"
+              onClick={(e) => {
+                createClickRipple(e);
+                playHapticSound('tap');
+                onLogout();
+                onClose();
+              }}
+              title="تسجيل الخروج"
+              className="h-10 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 flex items-center justify-center transition-all cursor-pointer tap-interactive"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
         {/* Modal: Contact Form */}
         {activeModal === 'contact' && (
-          <div className="absolute inset-0 bg-slate-950 p-5 flex flex-col z-20 overflow-y-auto animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-slate-950 p-5 flex flex-col z-30 overflow-y-auto animate-in fade-in duration-200 text-right">
             <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
               <h3 className="text-base font-bold text-white flex items-center gap-2 font-titles">
                 <AnimatedIcon icon={MessageCircle} size="sm" className="text-amber-400" />
@@ -378,11 +512,6 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
                 />
               </div>
 
-              <div className="neu-inset p-2.5 rounded-xl bg-black/50 border border-white/5 flex items-center justify-between text-[11px] text-slate-400">
-                <span className="font-hints">{t.yourUniqueCode}</span>
-                <span className="font-mono text-cyan-400 font-bold">{userUUID}</span>
-              </div>
-
               <button
                 type="submit"
                 disabled={isSendingContact}
@@ -408,7 +537,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
 
         {/* Modal: Social Channels */}
         {activeModal === 'social' && (
-          <div className="absolute inset-0 bg-slate-950 p-5 flex flex-col z-20 animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-slate-950 p-5 flex flex-col z-30 animate-in fade-in duration-200 text-right">
             <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
               <h3 className="text-base font-bold text-white flex items-center gap-2 font-titles">
                 <AnimatedIcon icon={Share2} size="sm" className="text-blue-400" />
@@ -423,7 +552,6 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
             </div>
 
             <div className="space-y-3">
-              {/* TikTok */}
               <a
                 href="https://www.tiktok.com/@00.tnt"
                 target="_blank"
@@ -442,7 +570,6 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
                 <AnimatedIcon icon={ExternalLink} size="sm" className="text-slate-500" />
               </a>
 
-              {/* Telegram */}
               <a
                 href="https://t.me/motrxvip"
                 target="_blank"
@@ -461,7 +588,6 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
                 <AnimatedIcon icon={ExternalLink} size="sm" className="text-slate-500" />
               </a>
 
-              {/* Discord Profile */}
               <div
                 onClick={copyDiscordID}
                 className="clay-btn p-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/10 flex items-center justify-between text-white transition-all cursor-pointer group tap-interactive"
@@ -486,7 +612,7 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
 
         {/* Modal: About App */}
         {activeModal === 'about' && (
-          <div className="absolute inset-0 bg-slate-950 p-5 flex flex-col z-20 animate-in fade-in duration-200">
+          <div className="absolute inset-0 bg-slate-950 p-5 flex flex-col z-30 animate-in fade-in duration-200 text-right">
             <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
               <h3 className="text-base font-bold text-white flex items-center gap-2 font-titles">
                 <AnimatedIcon icon={Info} size="sm" className="text-emerald-400" />
@@ -514,12 +640,12 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
               <p className="font-hints">{t.aboutDescription}</p>
 
               <div className="neu-inset p-3.5 rounded-2xl bg-purple-950/40 border border-purple-500/20 text-purple-200 font-hints">
-                ⭐ <b>المميزات:</b> عداد مائي ثلاثي الأبعاد، ذكاء اصطناعي AI فائق، تحديث دائم للتوكن، إرسال تقارير منسقة للديسكورد وتلجرام، 12 ثيماً ملوكياً، وتصميم آيفون انسيابي فخم.
+                ⭐ <b>المميزات:</b> عداد مائي ثلاثي الأبعاد، تجميع أندرويد 15 APK تلقائي عبر GitHub، ذكاء اصطناعي فائق، شريط ملاحة ناعم مستوحى من CSS Sidebar، و12 ثيماً ملوكياً.
               </div>
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };

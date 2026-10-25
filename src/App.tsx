@@ -18,6 +18,7 @@ import { SideDrawer } from './components/SideDrawer';
 import { LoginScreen } from './components/LoginScreen';
 import { BottomTabBar } from './components/BottomTabBar';
 import { AndroidInstallModal } from './components/AndroidInstallModal';
+import { GithubUploadApkModal } from './components/GithubUploadApkModal';
 import { Sun, Moon, Menu, CheckCircle2, Bell, ChevronDown, Smartphone, Cpu, Sparkles } from 'lucide-react';
 
 const EMPTY_SUBSCRIBER_DATA: SubscriberData = {
@@ -62,6 +63,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<AppTab>('home');
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
+  const [isGithubApkModalOpen, setIsGithubApkModalOpen] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
@@ -498,9 +500,9 @@ export default function App() {
                       onClick={(e) => {
                         createClickRipple(e);
                         playHapticSound('tap');
-                        setIsInstallModalOpen(true);
+                        setIsGithubApkModalOpen(true);
                       }}
-                      title="تثبيت تطبيق أندرويد (APK)"
+                      title="تجميع تطبيق أندرويد 15 APK (ERTH)"
                       className="h-10 px-2.5 rounded-2xl bg-gradient-to-r from-emerald-500/15 to-cyan-500/15 border border-emerald-400/30 text-emerald-300 hover:text-white hover:bg-emerald-500/25 flex items-center gap-1.5 cursor-pointer tap-interactive relative"
                     >
                       <Smartphone className="w-4 h-4 text-emerald-400" />
@@ -675,7 +677,7 @@ export default function App() {
                   t={t}
                 />
 
-                {/* Luxury Side Drawer */}
+                {/* Luxury Side Drawer (Styled after user's CSS Sidebar screenshots) */}
                 <SideDrawer
                   isOpen={isDrawerOpen}
                   onClose={() => setIsDrawerOpen(false)}
@@ -685,6 +687,9 @@ export default function App() {
                   }}
                   onLogout={handleLogout}
                   onOpenInstallModal={() => setIsInstallModalOpen(true)}
+                  onOpenGithubApkModal={() => setIsGithubApkModalOpen(true)}
+                  onToggleThemeMode={toggleThemeMode}
+                  hasActiveAlert={!!activeAlertSchedule?.isActive}
                   data={subscriberData}
                   userAvatar={userAvatar}
                   userUUID={userUUID}
@@ -695,6 +700,14 @@ export default function App() {
                 <AndroidInstallModal
                   isOpen={isInstallModalOpen}
                   onClose={() => setIsInstallModalOpen(false)}
+                  onOpenGithubApkModal={() => setIsGithubApkModalOpen(true)}
+                />
+
+                {/* GitHub Actions Android 15 APK Builder (ERTH) */}
+                <GithubUploadApkModal
+                  isOpen={isGithubApkModalOpen}
+                  onClose={() => setIsGithubApkModalOpen(false)}
+                  repoName="ERTH"
                 />
               </motion.div>
             )}

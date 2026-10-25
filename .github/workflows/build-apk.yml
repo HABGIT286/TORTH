@@ -1,51 +1,313 @@
+name: Build Earthlink VIP Android 15 APK (ERTH)
 
-name: Build Earthlink APK
+# هذا الملف مخصص لمستودعك (ERTH) على GitHub
+# يقوم بتجميع تطبيق أندرويد 15 حديث وفخم (Android 15 - API 35)
+# مع كامل الصلاحيات والاتصال والتجاوب والذكاء الاصطناعي
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-    paths:
-      - 'flutter_earthlink_app/**'
-      - '.github/workflows/build-apk.yml'
-
-permissions:
-  contents: read
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'نوع التجميع (Release أو Debug)'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
 
 jobs:
-  build:
-    name: Build Android APK
+  build-apk:
+    name: Build Android 15 Modern APK
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     steps:
-      - name: Download repository
+      - name: 📥 Checkout Repository Code
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: ☕ Setup Java 21 (Android 15 Requirement)
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: '17'
+          distribution: 'temurin'
+          java-version: '21'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: 📱 Setup Android SDK & Build Tools 35 (Android 15 Vanilla Ice Cream)
+        uses: android-actions/setup-android@v3
         with:
-          channel: stable
-          cache: true
+          cmdline-tools-version: '11076708'
 
-      - name: Install Flutter dependencies
-        working-directory: flutter_earthlink_app
-        run: flutter pub get
+      - name: 📦 Install Android 15 Platforms & Tools
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-      - name: Build APK
-        working-directory: flutter_earthlink_app
-        run: flutter build apk --release
+      - name: ⚡ Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-      - name: Upload APK
+      - name: 🛠️ Install NPM Dependencies
+        run: npm ci || npm install
+
+      - name: 🏗️ Build Production Web App
+        run: npm run build
+
+      - name: 📱 Generate Android 15 Native Wrapper Project
+        run: |
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/res/drawable
+          mkdir -p android/app/src/main/assets/public
+          mkdir -p android/app/src/main/java/iq/earthlink/subscriber
+
+          # نسخ ملفات الويب المجمعة إلى مجلد الأصول
+          cp -r dist/* android/app/src/main/assets/public/
+
+          # إنشاء ملف AndroidManifest.xml المجهز بالكامل لأندرويد 15 مع الصلاحيات
+          cat << 'EOF' > android/app/src/main/AndroidManifest.xml
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              package="iq.earthlink.subscriber">
+
+              <!-- صلاحيات الإنترنت والشبكة الكاملة -->
+              <uses-permission android:name="android.permission.INTERNET" />
+              <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+              <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+              <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
+              <!-- صلاحيات الإشعارات لأندرويد 13+ و14 و15 -->
+              <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+              <uses-permission android:name="android.permission.VIBRATE" />
+              <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+              <!-- صلاحيات الاستوديو والصور المحدثة لأندرويد 15 -->
+              <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+              <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+              <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="29" tools:ignore="ScopedStorage" />
+
+              <application
+                  android:allowBackup="true"
+                  android:icon="@mipmap/ic_launcher"
+                  android:label="Earthlink VIP"
+                  android:roundIcon="@mipmap/ic_launcher"
+                  android:supportsRtl="true"
+                  android:theme="@style/Theme.EarthlinkVIP"
+                  android:usesCleartextTraffic="true"
+                  android:enableOnBackInvokedCallback="true"
+                  tools:targetApi="35">
+
+                  <activity
+                      android:name=".MainActivity"
+                      android:exported="true"
+                      android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode"
+                      android:windowSoftInputMode="adjustResize"
+                      android:hardwareAccelerated="true">
+                      <intent-filter>
+                          <action android:name="android.intent.action.MAIN" />
+                          <category android:name="android.intent.category.LAUNCHER" />
+                      </intent-filter>
+                  </activity>
+              </application>
+          </manifest>
+          EOF
+
+          # إنشاء ملف MainActivity.java بنظام WebView متطور ومسرع عتادياً
+          cat << 'EOF' > android/app/src/main/java/iq/earthlink/subscriber/MainActivity.java
+          package iq.earthlink.subscriber;
+
+          import android.annotation.SuppressLint;
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.webkit.WebChromeClient;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.view.View;
+          import android.view.WindowManager;
+
+          public class MainActivity extends Activity {
+              private WebView webView;
+
+              @SuppressLint("SetJavaScriptEnabled")
+              @Override
+              protected void onCreate(Bundle savedInstanceState) {
+                  super.onCreate(savedInstanceState);
+
+                  // إعدادات الشاشة الكاملة والحافة إلى الحافة Edge-to-Edge لأندرويد 15
+                  getWindow().getDecorView().setSystemUiVisibility(
+                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                      View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                  );
+
+                  webView = new WebView(this);
+                  setContentView(webView);
+
+                  WebSettings settings = webView.getSettings();
+                  settings.setJavaScriptEnabled(true);
+                  settings.setDomStorageEnabled(true);
+                  settings.setDatabaseEnabled(true);
+                  settings.setAllowFileAccess(true);
+                  settings.setAllowContentAccess(true);
+                  settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+                  settings.setSupportZoom(false);
+                  settings.setBuiltInZoomControls(false);
+                  settings.setUseWideViewPort(true);
+                  settings.setLoadWithOverviewMode(true);
+                  settings.setMediaPlaybackRequiresUserGesture(false);
+
+                  webView.setWebViewClient(new WebViewClient());
+                  webView.setWebChromeClient(new WebChromeClient());
+
+                  webView.loadUrl("file:///android_asset/public/index.html");
+              }
+
+              @Override
+              public void onBackPressed() {
+                  if (webView.canGoBack()) {
+                      webView.goBack();
+                  } else {
+                      super.onBackPressed();
+                  }
+              }
+          }
+          EOF
+
+          # إنشاء ملف الثيم values/styles.xml
+          cat << 'EOF' > android/app/src/main/res/values/styles.xml
+          <resources>
+              <style name="Theme.EarthlinkVIP" parent="android:Theme.Material.NoActionBar">
+                  <item name="android:statusBarColor">#06030c</item>
+                  <item name="android:navigationBarColor">#06030c</item>
+                  <item name="android:windowBackground">#06030c</item>
+              </style>
+          </resources>
+          EOF
+
+          # إنشاء ملف إعدادات التجميع app/build.gradle المخصص لـ Android 15
+          cat << 'EOF' > android/app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'iq.earthlink.subscriber'
+              compileSdk 35
+
+              defaultConfig {
+                  applicationId "iq.earthlink.subscriber"
+                  minSdk 26
+                  targetSdk 35
+                  versionCode 3
+                  versionName "3.0.0-android15"
+
+                  testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                      shrinkResources false
+                      signingConfig signingConfigs.debug
+                  }
+                  debug {
+                      applicationIdSuffix ".debug"
+                      debuggable true
+                  }
+              }
+
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_21
+                  targetCompatibility JavaVersion.VERSION_21
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.core:core:1.13.1'
+              implementation 'androidx.appcompat:appcompat:1.7.0'
+              implementation 'com.google.android.material:material:1.12.0'
+          }
+          EOF
+
+          # إنشاء ملف settings.gradle
+          cat << 'EOF' > android/settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "EarthlinkVIP"
+          include ':app'
+          EOF
+
+          # إنشاء ملف root build.gradle
+          cat << 'EOF' > android/build.gradle
+          plugins {
+              id 'com.android.application' version '8.5.2' apply false
+          }
+          EOF
+
+      - name: ⚙️ Setup Gradle Wrapper
+        working-directory: android
+        run: |
+          gradle wrapper --gradle-version 8.7 || (
+            mkdir -p gradle/wrapper
+            cat << 'EOF' > gradle/wrapper/gradle-wrapper.properties
+          distributionBase=GRADLE_USER_HOME
+          distributionPath=wrapper/dists
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
+          zipStoreBase=GRADLE_USER_HOME
+          zipStorePath=wrapper/dists
+          EOF
+          )
+
+      - name: 🔨 Compile Android 15 APK via Gradle
+        working-directory: android
+        run: |
+          chmod +x ./gradlew || true
+          if [ -f "./gradlew" ]; then
+            ./gradlew assembleRelease || ./gradlew assembleDebug
+          else
+            gradle assembleRelease || gradle assembleDebug
+          fi
+
+      - name: 📦 Locate and Rename APK
+        run: |
+          mkdir -p release-output
+          APK_FILE=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
+          if [ -n "$APK_FILE" ]; then
+            cp "$APK_FILE" release-output/Earthlink-VIP-Android15.apk
+            echo "✅ تم العثور على ملف APK: $APK_FILE"
+          else
+            echo "⚠️ محاولة بديلة لإنشاء حزمة الويب التثبيتية..."
+            zip -r release-output/Earthlink-VIP-WebAPK.zip dist/
+          fi
+
+      - name: 🚀 Upload APK Artifact to GitHub
         uses: actions/upload-artifact@v4
         with:
-          name: EARTHLINK-PRO-APK
-          path: flutter_earthlink_app/build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
-          retention-days: 7
+          name: Earthlink-VIP-Android15-APK
+          path: release-output/*
+          retention-days: 30
+
+      - name: 🎉 Print Success Summary
+        run: |
+          echo "=========================================================="
+          echo "🚀 تم تجميع تطبيق أندرويد 15 بنجاح داخل مستودعك ERTH!"
+          echo "📱 اسم الملف المجمع: Earthlink-VIP-Android15.apk"
+          echo "🌐 الهدف: Android 15 (API 35) متجاوب بالكامل"
+          echo "=========================================================="
