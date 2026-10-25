@@ -1,27 +1,64 @@
+
 name: Earthlink scheduled report
+
 on:
   schedule:
     - cron: "*/5 * * * *"
   workflow_dispatch:
+
 permissions:
   contents: write
+
 concurrency:
   group: earthlink-scheduled-report
   cancel-in-progress: false
+
 jobs:
   report:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
+
+      - name: Check required secrets
+        env:
+          EARTHLINK_USERNAME: ${{ secrets.EARTHLINK_USERNAME }}
+          EARTHLINK_PASSWORD: ${{ secrets.EARTHLINK_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python - <<'PY'
+          import os
+          import sys
+
+          required = [
+              "EARTHLINK_USERNAME",
+              "EARTHLINK_PASSWORD",
+              "TELEGRAM_BOT_TOKEN",
+              "TELEGRAM_CHAT_ID",
+          ]
+
+          missing = [key for key in required if not os.getenv(key, "").strip()]
+
+          if missing:
+              print("Missing GitHub Secrets: " + ", ".join(missing))
+              sys.exit(1)
+
+          print("Required secrets are configured.")
+          PY
+
       - name: Check schedule and send if due
         env:
           EARTHLINK_USERNAME: ${{ secrets.EARTHLINK_USERNAME }}
@@ -29,15 +66,21 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python earthlink_telegram_bot.py --scheduled
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
+        run: python -u earthlink_telegram_bot.py --scheduled
+
       - name: Commit updated schedule status
         run: |
           if git diff --quiet -- schedule.yml; then
             echo "No schedule changes."
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add schedule.yml
           git commit -m "Mark Earthlink schedule as sent"
           git push
