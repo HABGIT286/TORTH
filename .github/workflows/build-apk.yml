@@ -2,7 +2,7 @@ name: Build Earthlink VIP Android 15 APK (ERTH)
 
 # هذا الملف مخصص لمستودعك (ERTH) على GitHub
 # يقوم بتجميع تطبيق أندرويد 15 حديث وفخم (Android 15 - API 35)
-# مع كامل الصلاحيات والاتصال والتجاوب والذكاء الاصطناعي
+# بدون مشاكل الأدوات القديمة (تم حل مشكلة Failed to find package 'tools')
 
 on:
   push:
@@ -36,15 +36,26 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: 📱 Setup Android SDK & Build Tools 35 (Android 15 Vanilla Ice Cream)
-        uses: android-actions/setup-android@v3
+      - name: 🐘 Setup Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
         with:
-          cmdline-tools-version: '11076708'
+          gradle-version: '8.7'
 
-      - name: 📦 Install Android 15 Platforms & Tools
+      - name: 📱 Setup Android 15 SDK (API 35) & Build Tools
         run: |
-          yes | sdkmanager --licenses || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools"
+          # استخدام حزمة Android SDK المدمجة في بيئة GitHub Runner بدون إضافات خارجية معطوبة
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+
+          echo "✅ قبول جميع تراخيص أندرويد تلقائياً..."
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+          echo "✅ تثبيت منصة أندرويد 15 (API 35) وأدوات البناء 35.0.0..."
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
       - name: ⚡ Setup Node.js 20
         uses: actions/setup-node@v4
@@ -65,8 +76,27 @@ jobs:
           mkdir -p android/app/src/main/assets/public
           mkdir -p android/app/src/main/java/iq/earthlink/subscriber
 
-          # نسخ ملفات الويب المجمعة إلى مجلد الأصول
+          # نسخ ملفات واجهة الويب المجمعة إلى مجلد الأصول داخل التطبيق
           cp -r dist/* android/app/src/main/assets/public/
+
+          # أيقونة متجهة فاخرة لتفادي أخطاء الموارد
+          cat << 'EOF' > android/app/src/main/res/drawable/ic_launcher.xml
+          <vector xmlns:android="http://schemas.android.com/apk/res/android"
+              android:width="108dp"
+              android:height="108dp"
+              android:viewportWidth="108"
+              android:viewportHeight="108">
+              <path
+                  android:fillColor="#090414"
+                  android:pathData="M0,0h108v108h-108z"/>
+              <path
+                  android:fillColor="#a855f7"
+                  android:pathData="M54,18L86,50L54,82L22,50Z"/>
+              <path
+                  android:fillColor="#06b6d4"
+                  android:pathData="M54,30L74,50L54,70L34,50Z"/>
+          </vector>
+          EOF
 
           # إنشاء ملف AndroidManifest.xml المجهز بالكامل لأندرويد 15 مع الصلاحيات
           cat << 'EOF' > android/app/src/main/AndroidManifest.xml
@@ -93,9 +123,9 @@ jobs:
 
               <application
                   android:allowBackup="true"
-                  android:icon="@mipmap/ic_launcher"
+                  android:icon="@drawable/ic_launcher"
                   android:label="Earthlink VIP"
-                  android:roundIcon="@mipmap/ic_launcher"
+                  android:roundIcon="@drawable/ic_launcher"
                   android:supportsRtl="true"
                   android:theme="@style/Theme.EarthlinkVIP"
                   android:usesCleartextTraffic="true"
@@ -261,29 +291,11 @@ jobs:
           }
           EOF
 
-      - name: ⚙️ Setup Gradle Wrapper
-        working-directory: android
-        run: |
-          gradle wrapper --gradle-version 8.7 || (
-            mkdir -p gradle/wrapper
-            cat << 'EOF' > gradle/wrapper/gradle-wrapper.properties
-          distributionBase=GRADLE_USER_HOME
-          distributionPath=wrapper/dists
-          distributionUrl=https\://services.gradle.org/distributions/gradle-8.7-bin.zip
-          zipStoreBase=GRADLE_USER_HOME
-          zipStorePath=wrapper/dists
-          EOF
-          )
-
       - name: 🔨 Compile Android 15 APK via Gradle
         working-directory: android
         run: |
-          chmod +x ./gradlew || true
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleRelease || ./gradlew assembleDebug
-          else
-            gradle assembleRelease || gradle assembleDebug
-          fi
+          echo "🔨 بدء تجميع APK بواسطة Gradle 8.7..."
+          gradle assembleRelease --stacktrace || gradle assembleDebug --stacktrace
 
       - name: 📦 Locate and Rename APK
         run: |
@@ -291,10 +303,10 @@ jobs:
           APK_FILE=$(find android/app/build/outputs/apk/ -name "*.apk" | head -n 1)
           if [ -n "$APK_FILE" ]; then
             cp "$APK_FILE" release-output/Earthlink-VIP-Android15.apk
-            echo "✅ تم العثور على ملف APK: $APK_FILE"
+            echo "✅ تم العثور على ملف APK وحفظه: $APK_FILE -> release-output/Earthlink-VIP-Android15.apk"
           else
-            echo "⚠️ محاولة بديلة لإنشاء حزمة الويب التثبيتية..."
-            zip -r release-output/Earthlink-VIP-WebAPK.zip dist/
+            echo "⚠️ محاولة العثور على أي ملف apk بديل..."
+            find . -name "*.apk" -exec cp {} release-output/Earthlink-VIP-Android15.apk \;
           fi
 
       - name: 🚀 Upload APK Artifact to GitHub

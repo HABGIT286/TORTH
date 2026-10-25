@@ -264,14 +264,21 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-      - uses: android-actions/setup-android@v3
-      - run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: 📱 Setup Android 15 SDK (API 35)
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools"
       - run: npm install && npm run build
-      - run: gradle assembleRelease
+      - name: 🔨 Compile APK
+        working-directory: android
+        run: gradle assembleRelease
       - uses: actions/upload-artifact@v4
         with:
           name: Earthlink-VIP-Android15-APK
-          path: release-output/*.apk`}
+          path: release-output/*`}
                 </pre>
               </div>
             )}
