@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { AppTab } from '../types/earthlink';
 import { playHapticSound, createClickRipple } from '../utils/effects';
-import { Home, FileText, Bell, Sliders, Cpu, LayoutDashboard } from 'lucide-react';
+import { Home, FileText, Bell, Sliders, Cpu } from 'lucide-react';
 
 interface BottomTabBarProps {
   activeTab: AppTab;
@@ -19,7 +19,6 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({
 }) => {
   const tabs: { id: AppTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'home', label: t.navHome, icon: Home },
-    { id: 'glassyV2', label: 'Glassy V2', icon: LayoutDashboard },
     { id: 'data', label: t.navData, icon: FileText },
     { id: 'ai', label: t.navAI || 'ذكاء AI', icon: Cpu },
     { id: 'alerts', label: t.navAlerts, icon: Bell },

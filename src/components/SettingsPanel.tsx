@@ -45,7 +45,6 @@ interface SettingsPanelProps {
 
 const LUXURY_THEMES: { id: ThemeId; nameAr: string; nameEn: string; gradient: string; tag: string; accent: string }[] = [
   { id: 'theme-royal-purple', nameAr: 'بنفسجي إمبراطوري', nameEn: 'Royal Purple', gradient: 'radial-gradient(circle at top, #9333ea, #240a45 70%, #090214)', tag: 'Earthlink Official', accent: '#a855f7' },
-  { id: 'theme-glassy-v2', nameAr: 'غلاسي V2 فخم (PaulCodes)', nameEn: 'Glassy Dashboard V2', gradient: 'radial-gradient(circle at top, #38bdf8, #1e1b4b 70%, #090611)', tag: 'Glassmorphism V2', accent: '#38bdf8' },
   { id: 'theme-miro-soft', nameAr: 'ميرو سوفت كلاي', nameEn: 'Miro Soft Clay UI', gradient: 'radial-gradient(circle at top, #3b82f6, #111520 70%, #090c13)', tag: 'Miro Soft Surface', accent: '#3b82f6' },
   { id: 'theme-clay-neon', nameAr: 'كلايمورفيزم نيون 3D', nameEn: 'Claymorphism 3D', gradient: 'radial-gradient(circle at top, #d946ef, #1a082c 70%, #08020e)', tag: 'Clay 3D Neon', accent: '#ec4899' },
   { id: 'theme-glass-obsidian', nameAr: 'زجاجي أوبسيديان', nameEn: 'Obsidian Glass', gradient: 'radial-gradient(circle at top, #8b5cf6, #0d0b14 70%, #030205)', tag: 'Glassmorphism', accent: '#8b5cf6' },

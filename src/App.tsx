@@ -19,8 +19,8 @@ import { LoginScreen } from './components/LoginScreen';
 import { BottomTabBar } from './components/BottomTabBar';
 import { AndroidInstallModal } from './components/AndroidInstallModal';
 import { GithubUploadApkModal } from './components/GithubUploadApkModal';
-import { GlassyDashboardV2 } from './components/GlassyDashboardV2';
-import { Sun, Moon, Menu, CheckCircle2, Bell, ChevronDown, Smartphone, Cpu, Sparkles, LayoutDashboard } from 'lucide-react';
+import { Sun, Moon, Menu, CheckCircle2, Bell, ChevronDown, Smartphone, Cpu, Sparkles } from 'lucide-react';
+import { fetchSubscriberProfile } from './services/earthlinkService';
 
 const EMPTY_SUBSCRIBER_DATA: SubscriberData = {
   fullName: 'مشترك إيرثلنك',
@@ -218,69 +218,30 @@ export default function App() {
     };
   }, []);
 
-  // Fetch verified user data from Earthlink proxy (matching Python session flow)
-  const fetchUserData = useCallback(async (authToken?: string) => {
+  // Fetch verified user data from Earthlink multi-tier service (proxy / direct / fallback)
+  const fetchUserData = useCallback(async (authToken?: string, customUser?: string) => {
     const currentToken = authToken || token;
     if (!currentToken) return;
 
     setIsRefreshing(true);
 
     try {
-      const res = await fetch('/api/earthlink/user-data', {
-        headers: {
-          Authorization: `Bearer ${currentToken}`
-        }
-      });
+      const activeUser = customUser || localStorage.getItem('EL_SAVED_USERNAME') || subscriberData.userID || 'مشترك إيرثلنك VIP';
+      const updated = await fetchSubscriberProfile(currentToken, activeUser);
 
-      if (res.status === 401 || res.status === 403) {
-        // Session expired or rejected by Earthlink CheckSession
-        localStorage.removeItem('EL_AUTH_TOKEN');
-        localStorage.removeItem('EL_SUBSCRIBER_CACHE');
-        setToken(null);
-        setIsLoggedIn(false);
-        setSubscriberData(EMPTY_SUBSCRIBER_DATA);
-        showNotice('انتهت صلاحية جلسة إيرثلنك. يرجى تسجيل الدخول مجدداً.');
-        return;
-      }
-
-      if (res.ok) {
-        const d = await res.json();
-        const payload = d.data || d;
-
-        const updated: SubscriberData = {
-          fullName: payload.fullName || 'مشترك إيرثلنك',
-          userID: payload.userID || '',
-          accountName: payload.accountName || 'اشتراك إيرثلنك',
-          accountPrice: payload.accountPrice || '—',
-          accountStatus: payload.accountStatus || 'فعال',
-          activeDaysLeft: typeof payload.activeDaysLeft === 'number' ? payload.activeDaysLeft : 0,
-          accountExpirationDate: payload.accountExpirationDate || '—',
-          agentName: payload.agentName || 'وكيل إيرثلنك',
-          userIP: payload.userIP || '—',
-          mobileNumber: payload.mobileNumber || '—',
-          city: payload.city || 'العراق',
-          address: payload.address || '—',
-          email: payload.email || '—',
-          accountImagePath: payload.accountImagePath || 'https://user.earthlink.iq/accountImages/138.png',
-          serviceStatusColor: payload.serviceStatusColor || (payload.activeDaysLeft > 0 ? 'Green' : 'Red'),
-          lastUpdated: new Date().toLocaleString('ar-IQ'),
-          isLiveConnection: true
-        };
-
-        setSubscriberData(updated);
-        try {
-          localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(updated));
-          localStorage.setItem('EL_LAST_DAILY_CHECK', new Date().toDateString());
-        } catch {
-          // Handled
-        }
+      setSubscriberData(updated);
+      try {
+        localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(updated));
+        localStorage.setItem('EL_LAST_DAILY_CHECK', new Date().toDateString());
+      } catch {
+        // Handled
       }
     } catch {
       // Keep existing data on transient network hiccups
     } finally {
       setIsRefreshing(false);
     }
-  }, [token]);
+  }, [token, subscriberData.userID]);
 
   // Dynamic Real-time auto-refresh & Daily auto-update
   useEffect(() => {
@@ -325,9 +286,10 @@ export default function App() {
   // Handle Login
   const handleLogin = (user: string, authToken: string) => {
     localStorage.setItem('EL_AUTH_TOKEN', authToken);
+    localStorage.setItem('EL_SAVED_USERNAME', user);
     setToken(authToken);
     setIsLoggedIn(true);
-    fetchUserData(authToken);
+    fetchUserData(authToken, user);
     showNotice(`مرحباً بك، تم تسجيل الدخول بنجاح بحساب ${user}`);
   };
 
@@ -512,27 +474,6 @@ export default function App() {
                       </span>
                     </motion.button>
 
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.92 }}
-                      onClick={(e) => {
-                        createClickRipple(e);
-                        playHapticSound('tap');
-                        setActiveTab(activeTab === 'glassyV2' ? 'home' : 'glassyV2');
-                      }}
-                      title="واجهة Glassy Dashboard V2 الفاخرة"
-                      className={`h-10 px-2.5 rounded-2xl border flex items-center gap-1.5 cursor-pointer tap-interactive transition-all ${
-                        activeTab === 'glassyV2'
-                          ? 'bg-cyan-500/25 border-cyan-400 text-white shadow-lg shadow-cyan-500/30'
-                          : 'bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10'
-                      }`}
-                    >
-                      <LayoutDashboard className="w-4 h-4 text-cyan-400" />
-                      <span className="text-[10px] font-black font-titles text-cyan-300">
-                        Glassy V2
-                      </span>
-                    </motion.button>
 
                     <motion.button
                       type="button"
@@ -609,20 +550,6 @@ export default function App() {
                       </motion.div>
                     )}
 
-                    {activeTab === 'glassyV2' && (
-                      <motion.div
-                        key="tab-glassyV2"
-                        initial={{ opacity: 0, y: 15, filter: 'blur(3px)' }}
-                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                        exit={{ opacity: 0, y: -15, filter: 'blur(3px)' }}
-                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                      >
-                        <GlassyDashboardV2
-                          subscriberData={subscriberData}
-                          onBackToMain={() => setActiveTab('home')}
-                        />
-                      </motion.div>
-                    )}
 
                     {activeTab === 'data' && (
                       <motion.div

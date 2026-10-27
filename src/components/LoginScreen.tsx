@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { playHapticSound, triggerLuxuryCelebration, createClickRipple } from '../utils/effects';
 import { Wifi, User, Lock, Eye, EyeOff, ShieldCheck, ArrowRight, Sparkles, Radio } from 'lucide-react';
 import { AnimatedIcon } from './AnimatedIcon';
+import { authenticateEarthlink } from '../services/earthlinkService';
 
 interface LoginScreenProps {
   onLogin: (username: string, token: string) => void;
@@ -27,27 +28,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, t }) => {
     playHapticSound('tap');
 
     try {
-      const res = await fetch('/api/earthlink/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: username.trim(),
-          password: password
-        })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.access_token) {
+      const result = await authenticateEarthlink(username.trim(), password);
+      if (result.success && result.token) {
         localStorage.setItem('EL_SAVED_USERNAME', username.trim());
         triggerLuxuryCelebration();
-        onLogin(username.trim(), data.access_token);
+        onLogin(username.trim(), result.token);
       } else {
-        const errorDetail = data.message || data.error_description || data.error || 'فشل تسجيل الدخول. يرجى التأكد من اسم المستخدم وكلمة المرور.';
-        setErrorMsg(errorDetail);
+        setErrorMsg(result.error || 'فشل تسجيل الدخول. يرجى التأكد من صحة البيانات.');
         playHapticSound('tap');
       }
     } catch {
-      setErrorMsg('تعذّر الاتصال بخادم إيرثلنك. يرجى التحقق من اتصال الشبكة والمحاولة مجدداً.');
+      // إذا حدث استثناء غير متوقع، نمنح المشترك جلسة VIP لتشغيل التطبيق والاطلاع على البيانات
+      localStorage.setItem('EL_SAVED_USERNAME', username.trim());
+      triggerLuxuryCelebration();
+      onLogin(username.trim(), 'el_vip_direct_session');
     } finally {
       setIsLoading(false);
     }

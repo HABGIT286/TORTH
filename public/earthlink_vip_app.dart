@@ -154,7 +154,6 @@ class _EarthlinkMainNavigationState extends State<EarthlinkMainNavigation>
                     index: _currentIndex,
                     children: [
                       _buildDashboardTab(),
-                      _buildGlassyV2Tab(),
                       _buildAiFeaturesTab(),
                       _buildSpeedTestTab(),
                       _buildAlertsTab(),
@@ -402,272 +401,6 @@ class _EarthlinkMainNavigationState extends State<EarthlinkMainNavigation>
     );
   }
 
-  // --------------------------------------------------------------------------
-  // تبويب: Glassy Dashboard V2 الفاخر (مطابق لصور التصميم المرفقة)
-  // --------------------------------------------------------------------------
-  Widget _buildGlassyV2Tab() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ترويسة الترحيب الفاخرة
-          GlassCard(
-            borderRadius: 24,
-            padding: const EdgeInsets.all(18),
-            borderColor: AppTheme.primaryCyan.withOpacity(0.4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Good morning, Code XR",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "Stay on top of your tasks, activities and balance",
-                      style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 12),
-                    ),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.goldVip.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.goldVip.withOpacity(0.4)),
-                  ),
-                  child: const Text(
-                    "Glassy V2",
-                    style: TextStyle(color: AppTheme.goldVip, fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // كرت الرصيد الكلي Total Balance
-          GlassCard(
-            borderRadius: 26,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Total Balance", style: TextStyle(color: Colors.white60, fontSize: 13)),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text("USD · +12.8%", style: TextStyle(color: AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "\$580,951.32",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 34,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.send_rounded, size: 16),
-                        label: const Text("Transfer"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.download_rounded, size: 16),
-                        label: const Text("Request"),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white24),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // شبكة الإحصائيات الأربعة (2x2 Grid)
-          Row(
-            children: [
-              Expanded(
-                child: GlassCard(
-                  borderRadius: 20,
-                  padding: const EdgeInsets.all(16),
-                  borderColor: AppTheme.success.withOpacity(0.3),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Total Savings", style: TextStyle(color: Colors.white60, fontSize: 12)),
-                      const SizedBox(height: 6),
-                      const Text("\$914", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text("+14% this month", style: TextStyle(color: AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GlassCard(
-                  borderRadius: 20,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Total Spending", style: TextStyle(color: Colors.white60, fontSize: 12)),
-                      const SizedBox(height: 6),
-                      const Text("\$655", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text("-4% this month", style: TextStyle(color: AppTheme.danger, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: GlassCard(
-                  borderRadius: 20,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Total Income", style: TextStyle(color: Colors.white60, fontSize: 12)),
-                      const SizedBox(height: 6),
-                      const Text("\$940", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text("+8% this month", style: TextStyle(color: AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GlassCard(
-                  borderRadius: 20,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text("Total Revenue", style: TextStyle(color: Colors.white60, fontSize: 12)),
-                      const SizedBox(height: 6),
-                      const Text("\$713", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      Text("+12% this month", style: TextStyle(color: AppTheme.success, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
-
-          // كود JSX كما في لقطة الشاشة
-          GlassCard(
-            borderRadius: 22,
-            padding: const EdgeInsets.all(16),
-            borderColor: AppTheme.primaryPurple.withOpacity(0.3),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.code_rounded, color: AppTheme.primaryCyan, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          "StatsCard.jsx (Framer Motion)",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text("jsx", style: TextStyle(color: AppTheme.primaryCyan, fontSize: 10, fontFamily: 'monospace')),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black45,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Text(
-                    "import { motion } from 'framer-motion';\n"
-                    "import { ShoppingBag, Users, ArrowUpRight } from 'lucide-react';\n\n"
-                    "const StatsCard = ({ title, value, change }) => (\n"
-                    "  <motion.div whileHover={{ y: -5 }} className=\"glass-card p-6 rounded-2xl\">\n"
-                    "    <p className=\"text-sm text-white/60\">{title}</p>\n"
-                    "    <h2 className=\"text-2xl font-bold text-white\">{value}</h2>\n"
-                    "    <p className=\"text-emerald-400\">+{change}%</p>\n"
-                    "  </motion.div>\n"
-                    ");",
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontFamily: 'monospace',
-                      fontSize: 11,
-                      height: 1.4,
-                    ),
-                    textDirection: TextDirection.ltr,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // --------------------------------------------------------------------------
   // تبويب 2: الذكاء الاصطناعي والفحص الذكي
@@ -943,24 +676,19 @@ class _EarthlinkMainNavigationState extends State<EarthlinkMainNavigation>
                     index: 0,
                   ),
                   _buildDrawerItem(
-                    icon: Icons.dashboard_customize_rounded,
-                    title: "واجهة Glassy Dashboard V2",
-                    index: 1,
-                  ),
-                  _buildDrawerItem(
                     icon: Icons.psychology_rounded,
                     title: "الذكاء الاصطناعي والتحسين",
-                    index: 2,
+                    index: 1,
                   ),
                   _buildDrawerItem(
                     icon: Icons.speed_rounded,
                     title: "فحص السرعة والشبكة",
-                    index: 3,
+                    index: 2,
                   ),
                   _buildDrawerItem(
                     icon: Icons.notifications_rounded,
                     title: "التنبيهات وتلجرام",
-                    index: 4,
+                    index: 3,
                   ),
                   const Divider(color: Colors.white10, height: 28),
                   _buildDrawerItem(
@@ -1052,10 +780,9 @@ class _EarthlinkMainNavigationState extends State<EarthlinkMainNavigation>
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildNavItem(0, Icons.home_rounded, "الرئيسية"),
-              _buildNavItem(1, Icons.dashboard_customize_rounded, "غلاسي V2"),
-              _buildNavItem(2, Icons.psychology_rounded, "الذكاء"),
-              _buildNavItem(3, Icons.speed_rounded, "السرعة"),
-              _buildNavItem(4, Icons.notifications_rounded, "التنبيهات"),
+              _buildNavItem(1, Icons.psychology_rounded, "الذكاء"),
+              _buildNavItem(2, Icons.speed_rounded, "السرعة"),
+              _buildNavItem(3, Icons.notifications_rounded, "التنبيهات"),
             ],
           ),
         ),
