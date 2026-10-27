@@ -1,20 +1,15 @@
 name: Deploy Website to GitHub Pages
 
-# هذا الملف يقوم بنشر موقعك كـ موقع حي ومجاني على الإنترنت عبر GitHub Pages
-# الرابط سيكون بالشكل: https://YOUR_USERNAME.github.io/REPO_NAME/
-
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
 
-# إعطاء الصلاحيات اللازمة لـ GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# منع التضارب عند الرفع المتكرر
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -29,6 +24,10 @@ jobs:
       - name: 📥 Checkout Repository Code
         uses: actions/checkout@v4
 
+      - name: 🌐 Configure GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
       - name: ⚡ Setup Node.js 20
         uses: actions/setup-node@v4
         with:
@@ -38,10 +37,9 @@ jobs:
         run: npm install --legacy-peer-deps
 
       - name: 🏗️ Build Production Website
-        run: npm run build
-
-      - name: 🌐 Configure GitHub Pages
-        uses: actions/configure-pages@v5
+        run: |
+          npm run build
+          cp dist/index.html dist/404.html
 
       - name: 📦 Upload Website Artifact
         uses: actions/upload-pages-artifact@v3
