@@ -58,6 +58,7 @@ export type ThemeId =
   | 'theme-miro-soft'
   | 'theme-clay-neon'
   | 'theme-glass-obsidian'
+  | 'theme-glassy-v2'
   | 'theme-neumorphic-luxury';
 
 export interface ThemeConfig {
@@ -100,7 +101,7 @@ export interface TypographySettings {
   englishWordsFont: string;
 }
 
-export type AppTab = 'home' | 'data' | 'alerts' | 'ai' | 'settings' | 'contact';
+export type AppTab = 'home' | 'data' | 'alerts' | 'ai' | 'settings' | 'contact' | 'glassyV2';
 
 export interface ManualAlertSchedule {
   isActive: boolean;

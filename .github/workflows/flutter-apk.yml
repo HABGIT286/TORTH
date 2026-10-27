@@ -1,0 +1,43 @@
+name: Build Flutter VIP Android APK
+
+# هذا الملف يتيح لك تجميع تطبيق Flutter Dart إلى APK مباشرة عبر GitHub Actions
+# يقوم بتشغيل flutter build apk وإخراج ملف APK رسمي عالي الأداء
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-flutter:
+    name: Build Flutter APK
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐦 Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.x'
+          channel: 'stable'
+          cache: true
+
+      - name: 📦 Get Dependencies
+        working-directory: flutter_earthlink_app
+        run: flutter pub get
+
+      - name: 🔨 Build APK
+        working-directory: flutter_earthlink_app
+        run: flutter build apk --release
+
+      - name: 🚀 Upload Flutter APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Earthlink-Flutter-Native-APK
+          path: flutter_earthlink_app/build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30

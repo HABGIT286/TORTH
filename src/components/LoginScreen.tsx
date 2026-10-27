@@ -171,6 +171,22 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, t }) => {
             )}
           </button>
 
+          {/* Quick Demo Preview Button */}
+          <button
+            type="button"
+            onClick={(e) => {
+              createClickRipple(e);
+              playHapticSound('success');
+              triggerLuxuryCelebration();
+              localStorage.setItem('EL_SAVED_USERNAME', 'erth_vip_preview');
+              onLogin('erth_vip_preview', 'demo_jwt_token_vip_access');
+            }}
+            className="w-full h-11 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/15 text-cyan-300 font-bold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>دخول تجريبي فوري وتصفح الواجهة (Demo VIP)</span>
+          </button>
+
           {/* Security & Direct Connection Indicator */}
           <div className="neu-inset p-2.5 rounded-xl bg-black/40 border border-white/5 flex items-center justify-center gap-2 text-center text-slate-400 text-[11px] font-hints">
             <AnimatedIcon icon={ShieldCheck} size="sm" className="text-emerald-400 shrink-0" />

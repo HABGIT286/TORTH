@@ -79,13 +79,22 @@ export const SideDrawer: React.FC<SideDrawerProps> = ({
   // List of navigation items matching the screenshot structure
   const menuItems = useMemo(() => [
     {
+      id: 'glassy-v2',
+      titleAr: 'واجهة Glassy Dashboard V2 الفاخرة',
+      titleEn: 'Glassy Dashboard V2',
+      icon: LayoutDashboard,
+      badge: 'V2 PRO',
+      tab: 'glassyV2' as AppTab,
+      highlight: true
+    },
+    {
       id: 'dashboard',
-      titleAr: 'لوحة التحكم الرئيسية',
-      titleEn: 'Dashboard',
+      titleAr: 'لوحة التحكم والعداد المائي',
+      titleEn: 'Dashboard & Meter',
       icon: LayoutDashboard,
       badge: null,
       tab: 'data' as AppTab,
-      highlight: true
+      highlight: false
     },
     {
       id: 'ai-brain',

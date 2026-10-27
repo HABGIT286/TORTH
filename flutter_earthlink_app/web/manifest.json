@@ -1,0 +1,11 @@
+{
+  "name": "Earthlink VIP",
+  "short_name": "Earthlink",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#06030c",
+  "theme_color": "#06030c",
+  "description": "بوابة مشتركي إيرثلنك الفاخرة",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
+}

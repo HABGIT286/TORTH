@@ -19,7 +19,8 @@ import { LoginScreen } from './components/LoginScreen';
 import { BottomTabBar } from './components/BottomTabBar';
 import { AndroidInstallModal } from './components/AndroidInstallModal';
 import { GithubUploadApkModal } from './components/GithubUploadApkModal';
-import { Sun, Moon, Menu, CheckCircle2, Bell, ChevronDown, Smartphone, Cpu, Sparkles } from 'lucide-react';
+import { GlassyDashboardV2 } from './components/GlassyDashboardV2';
+import { Sun, Moon, Menu, CheckCircle2, Bell, ChevronDown, Smartphone, Cpu, Sparkles, LayoutDashboard } from 'lucide-react';
 
 const EMPTY_SUBSCRIBER_DATA: SubscriberData = {
   fullName: 'مشترك إيرثلنك',
@@ -518,6 +519,28 @@ export default function App() {
                       onClick={(e) => {
                         createClickRipple(e);
                         playHapticSound('tap');
+                        setActiveTab(activeTab === 'glassyV2' ? 'home' : 'glassyV2');
+                      }}
+                      title="واجهة Glassy Dashboard V2 الفاخرة"
+                      className={`h-10 px-2.5 rounded-2xl border flex items-center gap-1.5 cursor-pointer tap-interactive transition-all ${
+                        activeTab === 'glassyV2'
+                          ? 'bg-cyan-500/25 border-cyan-400 text-white shadow-lg shadow-cyan-500/30'
+                          : 'bg-white/5 border-white/10 text-slate-300 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-cyan-400" />
+                      <span className="text-[10px] font-black font-titles text-cyan-300">
+                        Glassy V2
+                      </span>
+                    </motion.button>
+
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.92 }}
+                      onClick={(e) => {
+                        createClickRipple(e);
+                        playHapticSound('tap');
                         setActiveTab('alerts');
                       }}
                       title="التنبيهات"
@@ -582,6 +605,21 @@ export default function App() {
                           t={t}
                           onNavigateToData={() => setActiveTab('data')}
                           onNavigateToAlerts={() => setActiveTab('alerts')}
+                        />
+                      </motion.div>
+                    )}
+
+                    {activeTab === 'glassyV2' && (
+                      <motion.div
+                        key="tab-glassyV2"
+                        initial={{ opacity: 0, y: 15, filter: 'blur(3px)' }}
+                        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                        exit={{ opacity: 0, y: -15, filter: 'blur(3px)' }}
+                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                      >
+                        <GlassyDashboardV2
+                          subscriberData={subscriberData}
+                          onBackToMain={() => setActiveTab('home')}
                         />
                       </motion.div>
                     )}
@@ -703,11 +741,12 @@ export default function App() {
                   onOpenGithubApkModal={() => setIsGithubApkModalOpen(true)}
                 />
 
-                {/* GitHub Actions Android 15 APK Builder (ERTH) */}
+                {/* GitHub Actions Android 15 APK & Live Site Modal */}
                 <GithubUploadApkModal
                   isOpen={isGithubApkModalOpen}
                   onClose={() => setIsGithubApkModalOpen(false)}
-                  repoName="ERTH"
+                  repoName="TORTH"
+                  githubUsername="HABGIT286"
                 />
               </motion.div>
             )}
