@@ -19,6 +19,7 @@ import { LoginScreen } from './components/LoginScreen';
 import { BottomTabBar } from './components/BottomTabBar';
 import { AndroidInstallModal } from './components/AndroidInstallModal';
 import { GithubUploadApkModal } from './components/GithubUploadApkModal';
+import { GlassySidebarV3 } from './components/GlassySidebarV3';
 import { Sun, Moon, Menu, CheckCircle2, Bell, ChevronDown, Smartphone, Cpu, Sparkles } from 'lucide-react';
 import { fetchSubscriberProfile } from './services/earthlinkService';
 
@@ -323,11 +324,11 @@ export default function App() {
   return (
     <LayoutGroup>
       <div className="h-screen w-full flex items-center justify-center p-0 sm:p-2 sm:py-3 select-none relative bg-[#06030c] overflow-hidden">
-        {/* Outer iOS Device Frame (VIP App Container) with layout animation */}
+        {/* Outer Application Shell (Glassmorphic Native Window) */}
         <motion.div
           layout
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className={`w-full max-w-md h-full sm:h-[94vh] sm:max-h-[860px] sm:rounded-[40px] border-0 sm:border sm:border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.9)] flex flex-col relative overflow-hidden transition-all duration-300 z-10 ${
+          className={`w-full max-w-md md:max-w-5xl lg:max-w-6xl xl:max-w-7xl h-full sm:h-[94vh] sm:max-h-[890px] sm:rounded-[40px] border-0 sm:border sm:border-white/15 shadow-[0_25px_70px_rgba(0,0,0,0.9)] flex flex-col relative overflow-hidden transition-all duration-300 z-10 ${
             customBgImage ? 'has-custom-app-theme' : ''
           }`}
           style={
@@ -388,9 +389,26 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.25 }}
-                className="flex-1 flex flex-col overflow-hidden relative"
+                className="flex-1 flex flex-col md:flex-row overflow-hidden relative"
               >
-                {/* Top Navigation Bar */}
+                {/* Embedded In-App Glassy Sidebar V3 for Desktop & Tablet Viewports */}
+                <div className="hidden md:flex h-full py-2 z-20">
+                  <GlassySidebarV3
+                    activeTab={activeTab}
+                    onNavigateTab={(tab) => {
+                      setActiveTab(tab);
+                      playHapticSound('tap');
+                    }}
+                    onLogout={handleLogout}
+                    subscriberData={subscriberData}
+                    userAvatar={userAvatar}
+                    isOnline={isOnline}
+                  />
+                </div>
+
+                {/* Main Content Workspace Container */}
+                <div className="flex-1 flex flex-col overflow-hidden relative h-full">
+                  {/* Top Navigation Bar */}
                 <div className="px-5 py-2.5 flex items-center justify-between z-20">
                   <div className="flex items-center gap-3">
                     {/* User Avatar with customizable logo */}
@@ -634,13 +652,16 @@ export default function App() {
                   </AnimatePresence>
                 </div>
 
-                {/* Bottom Floating iOS Tab Bar */}
-                <BottomTabBar
-                  activeTab={activeTab}
-                  onTabChange={setActiveTab}
-                  hasActiveAlert={!!activeAlertSchedule?.isActive}
-                  t={t}
-                />
+                {/* Bottom Floating iOS Tab Bar (Mobile Thumb Navigation) */}
+                <div className="md:hidden">
+                  <BottomTabBar
+                    activeTab={activeTab}
+                    onTabChange={setActiveTab}
+                    hasActiveAlert={!!activeAlertSchedule?.isActive}
+                    t={t}
+                  />
+                </div>
+              </div>
 
                 {/* Luxury Side Drawer (Styled after user's CSS Sidebar screenshots) */}
                 <SideDrawer
