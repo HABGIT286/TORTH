@@ -35,7 +35,7 @@ export const GithubUploadApkModal: React.FC<GithubUploadApkModalProps> = ({
   repoName = 'TORTH',
   githubUsername = 'HABGIT286'
 }) => {
-  const [activeTab, setActiveTab] = useState<'liveSite' | 'upload' | 'workflow' | 'android15' | 'dartFile'>('liveSite');
+  const [activeTab, setActiveTab] = useState<'liveSite' | 'standaloneHtml' | 'upload' | 'workflow' | 'android15' | 'dartFile'>('standaloneHtml');
   const [copiedSection, setCopiedSection] = useState<string | null>(null);
   const [customUser, setCustomUser] = useState<string>(githubUsername);
   const [customRepo, setCustomRepo] = useState<string>(repoName);
@@ -88,6 +88,17 @@ git push origin main`;
     triggerLuxuryCelebration();
   };
 
+  const handleDownloadStandaloneHtml = () => {
+    playHapticSound('tap');
+    const a = document.createElement('a');
+    a.href = '/standalone_index.html';
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    triggerLuxuryCelebration();
+  };
+
   const handleDownloadFlutterZip = () => {
     playHapticSound('tap');
     const a = document.createElement('a');
@@ -126,13 +137,13 @@ git push origin main`;
               </div>
               <div>
                 <h3 className="text-base font-black text-white font-titles flex items-center gap-2">
-                  <span>إظهار الموقع الحي وتطبيق APK وفلاتر Dart</span>
+                  <span>الموقع الحي وتطبيق APK وملف index.html الشامل</span>
                   <span className="soft-pill text-[9px] px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-mono font-bold">
                     {customRepo}
                   </span>
                 </h3>
                 <p className="text-[11px] text-purple-300 font-hints">
-                  تشغيل الموقع وتطبيق أندرويد وملف دارت فلاتر المتكامل
+                  تشغيل الموقع كملف HTML مستقل كامل، وتطبيق أندرويد وملف دارت
                 </p>
               </div>
             </div>
@@ -152,6 +163,7 @@ git push origin main`;
           {/* Tabs */}
           <div className="flex border-b border-white/10 bg-black/40 p-1.5 gap-1 relative z-10 overflow-x-auto scrollbar-none">
             {[
+              { id: 'standaloneHtml', label: '📄 ملف index.html المستقل', icon: FileCode },
               { id: 'liveSite', label: '🌐 فتح الموقع الحي', icon: Globe },
               { id: 'dartFile', label: '🐦 كود Dart فلاتر', icon: Sparkles },
               { id: 'upload', label: '📤 رفع التحديثات', icon: Terminal },
@@ -183,6 +195,60 @@ git push origin main`;
 
           {/* Content Body */}
           <div className="p-5 overflow-y-auto space-y-4 max-h-[58vh] relative z-10">
+            {/* TAB: STANDALONE SINGLE-FILE INDEX.HTML */}
+            {activeTab === 'standaloneHtml' && (
+              <div className="space-y-4">
+                <div className="neu-inset p-3.5 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/40 to-slate-900/60 border border-cyan-500/40 space-y-1.5 text-xs font-hints text-cyan-200">
+                  <div className="flex items-center gap-2 font-bold text-white font-titles text-[13px]">
+                    <AnimatedIcon icon={FileCode} size="sm" className="text-cyan-400" />
+                    <span>نسخة الموقع المستقلة كملف index.html شامل واحد</span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-slate-300">
+                    تم إنشاء نسخة كاملة ومستقلة تماماً من موقعك في ملف <strong>index.html</strong> واحد يتضمن كل شيء: التصميم الزجاجي الفاخر، القائمة الجانبية V3، العداد المائي، تسجيل الدخول واتصالات إيرثلنك المباشرة، فاحص الذكاء الاصطناعي، وتبديل الثيمات، دون الحاجة لأي Node.js أو سيرفر خارجي!
+                  </p>
+                </div>
+
+                <div className="clay-card p-4 rounded-2xl bg-black/60 border border-white/10 space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-white font-titles">خيارات استخدام وتشغيل ملف index.html:</span>
+                    <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-400/20">جاهز للتحميل</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      onClick={handleDownloadStandaloneHtml}
+                      className="clay-btn p-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>تحميل ملف index.html فوراً</span>
+                    </button>
+
+                    <a
+                      href="/standalone_index.html"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="clay-btn p-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/20 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer text-center"
+                    >
+                      <ExternalLink className="w-4 h-4 text-cyan-400" />
+                      <span>معاينة وفتح الموقع في تبويب جديد</span>
+                    </a>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-black/40 border border-white/5 space-y-1.5 text-[11px] text-slate-400">
+                    <div className="text-white font-bold flex items-center gap-1.5 font-titles">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>كيف تستخدم هذا الملف على GitHub؟</span>
+                    </div>
+                    <p className="leading-relaxed">
+                      ١. حمّل الملف باسم <strong>index.html</strong>.<br />
+                      ٢. ضعه مباشرة في المجلد الرئيسي لمستودعك على GitHub.<br />
+                      ٣. سيعمل موقعك مباشرة فوراً عند فتحه أو عبر GitHub Pages!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* TAB 1: HOW TO MAKE LIVE SITE (GITHUB PAGES) */}
             {activeTab === 'liveSite' && (
               <div className="space-y-4">
