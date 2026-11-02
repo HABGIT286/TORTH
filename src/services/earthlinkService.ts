@@ -336,8 +336,7 @@ export async function checkEarthlinkSession(token: string): Promise<boolean> {
  */
 export async function fetchSubscriberProfile(token: string, username: string): Promise<SubscriberData> {
   const today = new Date();
-  const defaultExp = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
-  const formattedExp = defaultExp.toISOString().replace('T', ' ').substring(0, 19);
+  today.setHours(0, 0, 0, 0);
 
   let cachedProfile: Partial<SubscriberData> = {};
   try {
@@ -347,14 +346,35 @@ export async function fetchSubscriberProfile(token: string, username: string): P
     // Handled
   }
 
+  // Calculate dynamic days left from accountExpirationDate or cache
+  let calculatedDays = 14;
+  let formattedExp = '';
+
+  if (cachedProfile.accountExpirationDate && cachedProfile.accountExpirationDate !== '—') {
+    const parsedExp = parseDateValue(cachedProfile.accountExpirationDate);
+    if (parsedExp) {
+      const expOnly = new Date(parsedExp);
+      expOnly.setHours(0, 0, 0, 0);
+      const diffMs = expOnly.getTime() - today.getTime();
+      calculatedDays = Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+      formattedExp = cachedProfile.accountExpirationDate;
+    }
+  }
+
+  if (!formattedExp) {
+    const defaultExp = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+    formattedExp = defaultExp.toISOString().replace('T', ' ').substring(0, 19);
+    calculatedDays = 14;
+  }
+
   const defaultProfile: SubscriberData = {
     fullName: cachedProfile.fullName || (username.startsWith('erth') ? 'مشترك إيرثلنك VIP' : username),
     userID: username || cachedProfile.userID || 'erth_user',
     accountName: cachedProfile.accountName || 'اشتراك إيرثلنك توربو VIP (50 Mbps)',
     accountPrice: cachedProfile.accountPrice || '45,000 د.ع',
-    accountStatus: cachedProfile.accountStatus || 'نشط - اشتراك ساري',
-    activeDaysLeft: cachedProfile.activeDaysLeft || 14,
-    accountExpirationDate: cachedProfile.accountExpirationDate || formattedExp,
+    accountStatus: calculatedDays > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية',
+    activeDaysLeft: calculatedDays,
+    accountExpirationDate: formattedExp,
     agentName: cachedProfile.agentName || 'برج النور للاتصالات',
     userIP: cachedProfile.userIP || '10.124.58.19',
     mobileNumber: cachedProfile.mobileNumber || '0770xxxxxxx',
@@ -362,7 +382,7 @@ export async function fetchSubscriberProfile(token: string, username: string): P
     address: cachedProfile.address || 'الكرخ - المنصور',
     email: cachedProfile.email || `${username || 'user'}@earthlink.iq`,
     accountImagePath: cachedProfile.accountImagePath || 'https://user.earthlink.iq/accountImages/138.png',
-    serviceStatusColor: cachedProfile.serviceStatusColor || 'Green',
+    serviceStatusColor: calculatedDays > 0 ? (calculatedDays <= 3 ? 'Red' : calculatedDays <= 10 ? 'Amber' : 'Green') : 'Red',
     lastUpdated: new Date().toLocaleTimeString('ar-IQ'),
     isLiveConnection: true
   };

@@ -56,20 +56,9 @@ export const playHapticSound = (type: 'tap' | 'success' | 'send' | 'switch' | 't
   }
 };
 
-// Luxury celebration burst
+// Luxury celebration burst - disabled confetti per user request
 export const triggerLuxuryCelebration = () => {
-  playHapticSound('success');
-  try {
-    confetti({
-      particleCount: 50,
-      spread: 60,
-      origin: { y: 0.65 },
-      colors: ['#a855f7', '#06b6d4', '#ec4899', '#eab308', '#ffffff'],
-      disableForReducedMotion: true
-    });
-  } catch {
-    // Fallback
-  }
+  // Confetti completely removed
 };
 
 // Interactive click particle & ripple creator

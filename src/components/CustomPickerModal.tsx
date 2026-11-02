@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { playHapticSound, triggerLuxuryCelebration } from '../utils/effects';
+import { playHapticSound } from '../utils/effects';
 import { X, Check, Plus, Type } from 'lucide-react';
 
 export interface PickerOption {
@@ -44,7 +44,6 @@ export const CustomPickerModal: React.FC<CustomPickerModalProps> = ({
       : `'${customFontInput.trim()}', sans-serif`;
 
     playHapticSound('success');
-    triggerLuxuryCelebration();
     onSelect(formatted);
     onClose();
   };

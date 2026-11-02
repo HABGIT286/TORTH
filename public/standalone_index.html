@@ -189,6 +189,94 @@
     ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.6); }
 
+    /* =========================================================================
+       MOKO LUXURY GLASS MATERIALS & SPECULAR GLOSS ENGINE
+       ========================================================================= */
+    .card-crystal .holo-card, .card-crystal .sidebar-glass {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+      backdrop-filter: blur(28px) saturate(180%) !important;
+      -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+      border: 1px solid rgba(255, 255, 255, 0.28) !important;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+    }
+
+    .card-obsidian .holo-card, .card-obsidian .sidebar-glass {
+      background: linear-gradient(135deg, rgba(16, 20, 28, 0.88) 0%, rgba(8, 10, 15, 0.96) 100%) !important;
+      backdrop-filter: blur(24px) !important;
+      -webkit-backdrop-filter: blur(24px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .card-frost .holo-card, .card-frost .sidebar-glass {
+      background: rgba(18, 24, 38, 0.65) !important;
+      backdrop-filter: blur(36px) saturate(160%) !important;
+      -webkit-backdrop-filter: blur(36px) saturate(160%) !important;
+      border: 1px solid rgba(148, 163, 184, 0.22) !important;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    }
+
+    .card-pearl .holo-card, .card-pearl .sidebar-glass {
+      background: linear-gradient(135deg, rgba(240, 245, 255, 0.14) 0%, rgba(200, 215, 240, 0.06) 100%) !important;
+      backdrop-filter: blur(30px) !important;
+      -webkit-backdrop-filter: blur(30px) !important;
+      border: 1px solid rgba(210, 230, 255, 0.35) !important;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.5) !important;
+    }
+
+    .card-liquid .holo-card, .card-liquid .sidebar-glass {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(139, 92, 246, 0.1) 50%, rgba(15, 23, 42, 0.7) 100%) !important;
+      backdrop-filter: blur(26px) !important;
+      -webkit-backdrop-filter: blur(26px) !important;
+      border: 1px solid rgba(6, 182, 212, 0.3) !important;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5), 0 0 25px rgba(6, 182, 212, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* MOKO Click Specular Flash Sweep */
+    .holo-card.soko-clicked::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.28) 50%, transparent 60%);
+      pointer-events: none;
+      animation: sokoGlassShine 0.75s ease-out forwards;
+      z-index: 50;
+      border-radius: inherit;
+    }
+
+    @keyframes sokoGlassShine {
+      0% { transform: translate(-100%, -100%) rotate(25deg); opacity: 0; }
+      20% { opacity: 1; }
+      100% { transform: translate(100%, 100%) rotate(25deg); opacity: 0; }
+    }
+
+    /* Ambient Starlight Dust Particles */
+    .particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 2;
+    }
+
+    .particle {
+      position: absolute;
+      bottom: -10px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff 0%, rgba(0, 240, 255, 0.8) 50%, transparent 100%);
+      animation: particleFloat 9s infinite linear;
+    }
+
+    @keyframes particleFloat {
+      0% { transform: translateY(0) scale(0.6); opacity: 0; }
+      10% { opacity: 0.8; }
+      90% { opacity: 0.8; }
+      100% { transform: translateY(-105vh) scale(1.1); opacity: 0; }
+    }
+
     .tap-scale {
       transition: transform 0.15s ease, filter 0.15s ease;
     }
@@ -198,6 +286,17 @@
   </style>
 </head>
 <body class="theme-royal-purple min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950">
+
+  <!-- Ambient Starlight Dust Particles (MOKO Luxury Evolution) -->
+  <div id="standaloneParticlesContainer" class="particles">
+    <div class="particle" style="left: 12%; animation-delay: 0s; width: 3px; height: 3px;"></div>
+    <div class="particle" style="left: 28%; animation-delay: 2s; width: 4px; height: 4px;"></div>
+    <div class="particle" style="left: 45%; animation-delay: 1.2s; width: 2px; height: 2px;"></div>
+    <div class="particle" style="left: 62%; animation-delay: 3.5s; width: 4px; height: 4px;"></div>
+    <div class="particle" style="left: 78%; animation-delay: 0.8s; width: 3px; height: 3px;"></div>
+    <div class="particle" style="left: 89%; animation-delay: 2.7s; width: 2px; height: 2px;"></div>
+    <div class="particle" style="left: 95%; animation-delay: 4.1s; width: 3px; height: 3px;"></div>
+  </div>
 
   <!-- 3D Three.js Hologram Background Canvas -->
   <canvas id="holo3dCanvas"></canvas>
@@ -369,17 +468,48 @@
                 </div>
               </div>
 
-              <!-- 3D Hologram Rotating Liquid Water Meter -->
+              <!-- 3D Liquid Sphere (سائل راكد بلون واحد نقي يرتفع وينخفض حسب الأيام دون دوران) -->
               <div class="flex flex-col items-center shrink-0">
-                <div class="water-gauge-3d">
-                  <div id="waterWaveBack" class="wave-holo-back" style="bottom: 45%;"></div>
-                  <div id="waterWaveFront" class="wave-holo-front" style="bottom: 40%;"></div>
-                  <div class="absolute inset-0 flex flex-col items-center justify-center z-10 text-center drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-                    <span id="meterDaysLeft" class="font-numbers text-4xl font-black text-white tracking-tight drop-shadow-[0_0_15px_rgba(0,240,255,0.8)]">14</span>
-                    <span class="text-[10px] font-bold text-cyan-200 uppercase tracking-widest mt-0.5">يوم متبقي</span>
+                <div class="relative p-2 rounded-full">
+                  <!-- Outer Calm Ring -->
+                  <div class="absolute inset-0 rounded-full border border-cyan-400/30 shadow-[0_0_20px_rgba(0,240,255,0.25)]"></div>
+
+                  <!-- 3D Glass Sphere Container -->
+                  <div id="sphereGlassContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] border-2 border-cyan-400/40 select-none transition-all duration-500" style="background: radial-gradient(circle at 50% 30%, #0d1527 0%, #040814 65%, #010308 100%); box-shadow: 0 0 30px rgba(0,240,255,0.25), inset 0 0 35px rgba(0,0,0,0.95);">
+                    <!-- 3D Inner Shadow Depth Ring -->
+                    <div class="absolute inset-0 rounded-full shadow-[inset_0_8px_20px_rgba(0,0,0,0.95)] z-20 pointer-events-none"></div>
+
+                    <!-- Top 3D Curved Glass Specular Highlight -->
+                    <div class="absolute top-2 left-6 right-6 h-12 rounded-[50%] bg-gradient-to-b from-white/35 via-white/5 to-transparent pointer-events-none z-30 blur-[0.5px]"></div>
+                    <!-- Bottom Glass Reflection -->
+                    <div class="absolute bottom-2 left-8 right-8 h-5 rounded-[50%] bg-gradient-to-t from-white/15 to-transparent pointer-events-none z-30 blur-[1px]"></div>
+
+                    <!-- CALM SINGLE-COLOR LIQUID BODY (سائل راكد مستقر بلون أزرق سماوي واحد نقي) -->
+                    <div id="liquidBodyFill" class="absolute left-0 right-0 bottom-0 transition-all duration-700 ease-out z-10" style="height: 47%; background: linear-gradient(180deg, #00d2ff 0%, #0091ff 45%, #0055d4 100%); box-shadow: 0 -4px 20px rgba(0, 240, 255, 0.45);">
+                      <!-- Calm Surface Line (سطح السائل الراكد) -->
+                      <div id="liquidSurfaceLine" class="absolute top-0 left-0 right-0 h-1.5 bg-cyan-200/90 shadow-[0_0_12px_#00f0ff]"></div>
+                    </div>
+
+                    <!-- Holographic Center Display -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center z-30 text-center pointer-events-none">
+                      <span id="meterDaysLeft" class="text-4xl sm:text-5xl font-black font-numbers tracking-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]">14</span>
+                      <span class="text-[11px] font-bold text-white uppercase tracking-wider font-titles drop-shadow mt-0.5">يوم متبقي</span>
+                      <span id="meterPctBadge" class="mt-1 px-3 py-0.5 rounded-full text-[9px] font-mono font-black border border-cyan-400/50 bg-black/60 text-cyan-200 backdrop-blur-md">47% ممتلئ</span>
+                    </div>
                   </div>
                 </div>
-                <span id="meterExpDate" class="text-[10px] font-mono text-cyan-300 mt-2 font-bold drop-shadow">تاريخ الانتهاء: 2026-11-13</span>
+
+                <span id="meterExpDate" class="text-[10px] font-mono text-cyan-300 mt-2 font-bold drop-shadow">تاريخ الانتهاء: 2026-11-14</span>
+
+                <!-- Quick Interactive Level Controls (معاينة فورية لتغير مستوى السائل الراكد) -->
+                <div class="flex items-center gap-1 mt-2 text-[9px] font-mono">
+                  <span class="text-slate-400 text-[9px] ml-1">تجربة:</span>
+                  <button type="button" onclick="setTestDays(0)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">0ي</button>
+                  <button type="button" onclick="setTestDays(3)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">3ي</button>
+                  <button type="button" onclick="setTestDays(10)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">10ي</button>
+                  <button type="button" onclick="setTestDays(18)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">18ي</button>
+                  <button type="button" onclick="setTestDays(30)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">30ي</button>
+                </div>
               </div>
             </div>
           </div>
@@ -464,8 +594,67 @@
           </div>
         </section>
 
-        <!-- 3. TAB: AI DIAGNOSTICS (Games / AI) -->
+        <!-- 3. TAB: AI DIAGNOSTICS & SCHEDULED URGENT ALERT -->
         <section id="tab-ai" class="tab-pane hidden space-y-4">
+          <!-- 1. Automated Scheduled Urgent Warning Card -->
+          <div class="holo-card p-5 rounded-3xl border border-rose-500/40 space-y-4 bg-gradient-to-br from-rose-950/25 via-slate-950/70 to-black/90">
+            <div class="card-glare"></div>
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+                  <i data-lucide="bell-ring" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-black text-white font-titles">التحذير العاجل المجدول تلقائياً (AI Auto-Scheduler)</h3>
+                  <p class="text-[11px] text-rose-200/90 font-hints">توقيت تلقائي مجدول يرسل تنبيهات النفاذ عبر ديسكورد وتليجرام</p>
+                </div>
+              </div>
+              <button onclick="toggleStandaloneAiSchedule()" id="standaloneAiSchedToggleBtn" class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all bg-white/10 text-slate-400">
+                معطل
+              </button>
+            </div>
+
+            <!-- Status & Live Countdown Bar -->
+            <div class="p-3 rounded-2xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2">
+                <i data-lucide="clock" class="w-4 h-4 text-cyan-400"></i>
+                <span class="text-slate-300">الإرسال القادم بعد:</span>
+                <span id="standaloneNextDispatchTimer" class="font-bold text-cyan-300 font-mono">الجدولة متوقفة</span>
+              </div>
+              <div class="text-[11px] text-slate-400">
+                <span>إجمالي الرسائل المرسلة: </span>
+                <span id="standaloneSentCount" class="text-emerald-400 font-bold font-mono">0</span>
+              </div>
+            </div>
+
+            <!-- Frequency Selector -->
+            <div class="space-y-1.5">
+              <span class="text-xs font-bold text-slate-300 block">تكرار التوقيت التلقائي:</span>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold">
+                <button onclick="setStandaloneInterval(1)" id="btn-interval-1" class="p-2 rounded-xl border border-white/10 bg-black/40 text-slate-300 text-center tap-scale">كل 1 ساعة (تجربة)</button>
+                <button onclick="setStandaloneInterval(6)" id="btn-interval-6" class="p-2 rounded-xl border border-rose-400/50 bg-rose-500/20 text-rose-200 text-center tap-scale">كل 6 ساعات</button>
+                <button onclick="setStandaloneInterval(12)" id="btn-interval-12" class="p-2 rounded-xl border border-white/10 bg-black/40 text-slate-300 text-center tap-scale">كل 12 ساعة</button>
+                <button onclick="setStandaloneInterval(24)" id="btn-interval-24" class="p-2 rounded-xl border border-white/10 bg-black/40 text-slate-300 text-center tap-scale">كل 24 ساعة</button>
+              </div>
+            </div>
+
+            <!-- Discord Webhook Input -->
+            <div class="space-y-1">
+              <label class="text-[11px] font-bold text-slate-300 block">رابط ويب هوك ديسكورد (Discord Webhook):</label>
+              <input type="text" id="standaloneDiscordWebhook" dir="ltr" value="https://discord.com/api/webhooks/1543603322563330200/6iJFpnPCOsYGDeArxVpWVhrErAzd9UmuHWOL_-5CO0nXsNoLdj3rnBWRf2W7Gq6DJwCF" class="w-full px-3 py-2 rounded-xl bg-black/60 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-cyan-400" />
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-2 pt-1">
+              <button onclick="dispatchUrgentTestStandalone()" class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 tap-scale shadow-[0_0_15px_rgba(244,63,94,0.35)]">
+                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                <span>إرسال تحذير تجريبي الآن لـ Discord و Telegram</span>
+              </button>
+            </div>
+            <div id="standaloneDispatchNotice" class="hidden p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs text-center"></div>
+          </div>
+
+          <!-- 2. AI Diagnostics Card -->
           <div class="holo-card p-5 rounded-3xl border border-purple-400/30 space-y-4">
             <div class="card-glare"></div>
             <div class="flex items-center gap-3">
@@ -537,35 +726,87 @@
           </div>
         </section>
 
-        <!-- 5. TAB: SETTINGS & THEMES -->
+        <!-- 5. TAB: SETTINGS & LUXURY GLASS MATERIALS -->
         <section id="tab-settings" class="tab-pane hidden space-y-4">
-          <div class="holo-card p-5 rounded-3xl border border-white/15 space-y-4">
+          <!-- MOKO Luxury Card Materials Picker -->
+          <div class="holo-card p-5 rounded-3xl border border-cyan-400/40 space-y-4">
             <div class="card-glare"></div>
-            <h2 class="text-lg font-bold text-white font-titles border-b border-white/10 pb-3">الإعدادات والمظهر ثلاثي الأبعاد</h2>
-
-            <!-- Theme Picker -->
-            <div class="space-y-2">
-              <label class="text-xs font-bold text-slate-300 font-titles">اختر الطابع الهولوغرافي:</label>
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                <button onclick="setThemeClass('theme-royal-purple')" class="p-3 rounded-2xl border border-purple-400/40 bg-purple-950/40 text-xs font-bold text-purple-200 text-center tap-scale">الأرجواني الهولوغرافي</button>
-                <button onclick="setThemeClass('theme-midnight-blue')" class="p-3 rounded-2xl border border-blue-400/40 bg-blue-950/40 text-xs font-bold text-blue-200 text-center tap-scale">أزرق ليلي (Deep Navy)</button>
-                <button onclick="setThemeClass('theme-matrix-emerald')" class="p-3 rounded-2xl border border-emerald-400/40 bg-emerald-950/40 text-xs font-bold text-emerald-200 text-center tap-scale">ماتريكس زمردي</button>
-                <button onclick="setThemeClass('theme-cyber-red')" class="p-3 rounded-2xl border border-rose-400/40 bg-rose-950/40 text-xs font-bold text-rose-200 text-center tap-scale">أحمر سايبر بنك</button>
-                <button onclick="setThemeClass('theme-amber-gold')" class="p-3 rounded-2xl border border-amber-400/40 bg-amber-950/40 text-xs font-bold text-amber-200 text-center tap-scale">الغروب الذهبي (Gold)</button>
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center">
+                  <i data-lucide="sparkles" class="w-4 h-4"></i>
+                </div>
+                <div>
+                  <h2 class="text-base font-black text-white font-titles">خامات الكاردات الزجاجية الفاخرة (MOKO Glass)</h2>
+                  <p class="text-[11px] text-slate-300 font-hints">اختر خامة الزجاج المتقدمة التي تنعكس على كامل كاردات وأقسام الموقع</p>
+                </div>
               </div>
+              <span id="activeMaterialBadge" class="px-3 py-1 rounded-full text-xs font-bold font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+                OBSIDIAN
+              </span>
             </div>
 
-            <!-- Single File Download & GitHub Export -->
-            <div class="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 space-y-2">
-              <div class="text-xs font-bold text-cyan-300 font-titles">حفظ كملف index.html مستقل:</div>
-              <p class="text-[11px] text-slate-300 leading-relaxed">
-                يمكنك تحميل هذه المنظومة بالكامل كملف <strong>index.html</strong> واحد يعمل مباشرة عند فتحه بأي متصفح أو عند رفعه إلى GitHub.
-              </p>
-              <button onclick="downloadSelfHTML()" class="px-4 py-2.5 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center gap-2 tap-scale shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-                <i data-lucide="download" class="w-4 h-4"></i>
-                <span>تحميل ملف index.html الآن</span>
+            <!-- Material Buttons -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <button onclick="setCardMaterialStandalone('obsidian')" class="p-3 rounded-2xl border border-white/10 bg-black/50 text-right tap-scale">
+                <div class="text-xs font-bold text-white font-titles">أوبسيديان كربوني (Obsidian)</div>
+                <div class="text-[10px] text-slate-400 font-hints">داكن مطفي ملكي مع حواف عاكسة</div>
+              </button>
+              <button onclick="setCardMaterialStandalone('crystal')" class="p-3 rounded-2xl border border-white/10 bg-black/50 text-right tap-scale">
+                <div class="text-xs font-bold text-white font-titles">كريستال زجاجي نقي (Crystal)</div>
+                <div class="text-[10px] text-slate-400 font-hints">شفافية بلورية نقية مع هالة ناعمة</div>
+              </button>
+              <button onclick="setCardMaterialStandalone('frost')" class="p-3 rounded-2xl border border-white/10 bg-black/50 text-right tap-scale">
+                <div class="text-xs font-bold text-white font-titles">جليدي ضبابي مطفي (Frosted Ice)</div>
+                <div class="text-[10px] text-slate-400 font-hints">ضبابية مخملية فخمة ناعمة للعين</div>
+              </button>
+              <button onclick="setCardMaterialStandalone('pearl')" class="p-3 rounded-2xl border border-white/10 bg-black/50 text-right tap-scale">
+                <div class="text-xs font-bold text-white font-titles">لؤلؤي فاخر عاكس (Lustrous Pearl)</div>
+                <div class="text-[10px] text-slate-400 font-hints">تدرجات لؤلؤية براقة تعكس الضوء بجمالية</div>
+              </button>
+              <button onclick="setCardMaterialStandalone('liquid')" class="p-3 rounded-2xl border border-white/10 bg-black/50 text-right tap-scale sm:col-span-2">
+                <div class="text-xs font-bold text-white font-titles">سائل نيون متوهج (Liquid Ambient)</div>
+                <div class="text-[10px] text-slate-400 font-hints">انعكاسات سائلة متناغمة مع توهج خافت مريح</div>
               </button>
             </div>
+
+            <!-- Starlight Particles Toggle -->
+            <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+              <div>
+                <span class="text-xs font-bold text-white font-titles block">جزيئات النجوم والشهب العائمة</span>
+                <span class="text-[10px] text-slate-400 font-hints">غبار ضوئي ناعم يطفو في خلفية الشاشة</span>
+              </div>
+              <button onclick="toggleParticlesStandalone()" id="standaloneParticlesToggleBtn" class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all bg-cyan-400 text-slate-950">
+                مفعل ✓
+              </button>
+            </div>
+          </div>
+
+          <!-- Themes Card -->
+          <div class="holo-card p-5 rounded-3xl border border-white/15 space-y-3">
+            <div class="card-glare"></div>
+            <h3 class="text-sm font-bold text-white font-titles">الطابع اللوني للهولوغرام (Themes):</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <button onclick="setThemeClass('theme-royal-purple')" class="p-2.5 rounded-xl border border-purple-400/40 bg-purple-950/40 text-xs font-bold text-purple-200 text-center tap-scale">الأرجواني الهولوغرافي</button>
+              <button onclick="setThemeClass('theme-midnight-blue')" class="p-2.5 rounded-xl border border-blue-400/40 bg-blue-950/40 text-xs font-bold text-blue-200 text-center tap-scale">أزرق ليلي (Deep Navy)</button>
+              <button onclick="setThemeClass('theme-matrix-emerald')" class="p-2.5 rounded-xl border border-emerald-400/40 bg-emerald-950/40 text-xs font-bold text-emerald-200 text-center tap-scale">ماتريكس زمردي</button>
+              <button onclick="setThemeClass('theme-cyber-red')" class="p-2.5 rounded-xl border border-rose-400/40 bg-rose-950/40 text-xs font-bold text-rose-200 text-center tap-scale">أحمر سايبر بنك</button>
+              <button onclick="setThemeClass('theme-amber-gold')" class="p-2.5 rounded-xl border border-amber-400/40 bg-amber-950/40 text-xs font-bold text-amber-200 text-center tap-scale">الغروب الذهبي (Gold)</button>
+            </div>
+          </div>
+
+          <!-- Single File Download -->
+          <div class="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-between gap-4">
+            <div>
+              <div class="text-xs font-bold text-cyan-300 font-titles">حفظ كملف index.html مستقل:</div>
+              <p class="text-[11px] text-slate-300 mt-0.5">
+                حفظ نسخة كاملة تعمل مباشرة في المتصفح أو على GitHub Pages.
+              </p>
+            </div>
+            <button onclick="downloadSelfHTML()" class="px-4 py-2.5 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-2 tap-scale shadow-[0_0_15px_rgba(0,240,255,0.4)] shrink-0">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>تحميل HTML</span>
+            </button>
           </div>
         </section>
 
@@ -804,9 +1045,27 @@
       }
     };
 
+    function calculateDaysFromDate(dateStr) {
+      if (!dateStr || dateStr === '—') return 14;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const parsed = parseDateValue(dateStr);
+      if (parsed) {
+        const expOnly = new Date(parsed);
+        expOnly.setHours(0, 0, 0, 0);
+        const diffMs = expOnly.getTime() - today.getTime();
+        return Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
+      }
+      return 14;
+    }
+
     try {
       const cached = localStorage.getItem('EL_SUBSCRIBER_CACHE');
-      if (cached) Object.assign(state.subscriber, JSON.parse(cached));
+      if (cached) {
+        Object.assign(state.subscriber, JSON.parse(cached));
+        state.subscriber.activeDaysLeft = calculateDaysFromDate(state.subscriber.accountExpirationDate);
+        state.subscriber.accountStatus = state.subscriber.activeDaysLeft > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
+      }
     } catch (e) {}
 
     // =========================================================================
@@ -959,24 +1218,66 @@
 
     function renderSubscriberUI() {
       const s = state.subscriber;
-      document.getElementById('heroFullName').textContent = s.fullName;
-      document.getElementById('heroAccountPlan').textContent = `${s.accountName} · ${s.accountStatus}`;
-      document.getElementById('heroUserId').textContent = s.userID;
-      document.getElementById('heroUserIp').textContent = s.userIP;
-      document.getElementById('heroAgentName').textContent = s.agentName;
-      document.getElementById('meterDaysLeft').textContent = s.activeDaysLeft;
-      document.getElementById('meterExpDate').textContent = `تاريخ الانتهاء: ${s.accountExpirationDate.substring(0, 10)}`;
-      document.getElementById('metricAccountPrice').innerHTML = `${s.accountPrice}`;
-      document.getElementById('sidebarUserName').textContent = s.fullName;
-      document.getElementById('sidebarUserRole').textContent = `Super Admin · ${s.userID}`;
-      document.getElementById('sidebarAvatarLetter').textContent = s.fullName.charAt(0) || 'E';
+      const nameEl = document.getElementById('heroFullName');
+      if (nameEl) nameEl.textContent = s.fullName;
+      const planEl = document.getElementById('heroAccountPlan');
+      if (planEl) planEl.textContent = `${s.accountName} · ${s.accountStatus}`;
+      const userEl = document.getElementById('heroUserId');
+      if (userEl) userEl.textContent = s.userID;
+      const ipEl = document.getElementById('heroUserIp');
+      if (ipEl) ipEl.textContent = s.userIP;
+      const agentEl = document.getElementById('heroAgentName');
+      if (agentEl) agentEl.textContent = s.agentName;
+      const expEl = document.getElementById('meterExpDate');
+      if (expEl) expEl.textContent = `تاريخ الانتهاء: ${s.accountExpirationDate.substring(0, 10)}`;
+      const priceEl = document.getElementById('metricAccountPrice');
+      if (priceEl) priceEl.innerHTML = `${s.accountPrice}`;
+      const sideName = document.getElementById('sidebarUserName');
+      if (sideName) sideName.textContent = s.fullName;
+      const sideRole = document.getElementById('sidebarUserRole');
+      if (sideRole) sideRole.textContent = `Super Admin · ${s.userID}`;
+      const sideLetter = document.getElementById('sidebarAvatarLetter');
+      if (sideLetter) sideLetter.textContent = s.fullName.charAt(0) || 'E';
 
-      // Liquid wave height
-      const pct = Math.min(100, Math.max(10, Math.round((s.activeDaysLeft / 30) * 100)));
-      const waveFront = document.getElementById('waterWaveFront');
-      const waveBack = document.getElementById('waterWaveBack');
-      if (waveFront) waveFront.style.bottom = `${pct - 35}%`;
-      if (waveBack) waveBack.style.bottom = `${pct - 30}%`;
+      updateWaterSphere(s.activeDaysLeft);
+    }
+
+    function updateWaterSphere(daysLeft) {
+      const clampedDays = Math.max(0, daysLeft);
+      const pct = Math.min(100, Math.round((clampedDays / 30) * 100));
+
+      const daysEl = document.getElementById('meterDaysLeft');
+      const pctBadge = document.getElementById('meterPctBadge');
+      const fillBody = document.getElementById('liquidBodyFill');
+      const surfaceLine = document.getElementById('liquidSurfaceLine');
+
+      if (daysEl) daysEl.textContent = clampedDays;
+      if (pctBadge) pctBadge.textContent = `${pct}% ممتلئ`;
+
+      // لون أزرق سماوي موحد نقي فاخر (سائل راكد مستقر بدون دوران وبدون تداخل ألوان)
+      const singleColor = 'linear-gradient(180deg, #00d2ff 0%, #0091ff 45%, #0055d4 100%)';
+
+      if (fillBody) {
+        fillBody.style.height = `${pct}%`;
+        fillBody.style.background = singleColor;
+        fillBody.style.boxShadow = '0 -4px 20px rgba(0, 240, 255, 0.45)';
+      }
+      if (surfaceLine) {
+        surfaceLine.style.display = pct > 0 ? 'block' : 'none';
+      }
+    }
+
+    function setTestDays(days) {
+      state.subscriber.activeDaysLeft = days;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const newExp = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
+      state.subscriber.accountExpirationDate = newExp.toISOString().replace('T', ' ').substring(0, 19);
+      state.subscriber.accountStatus = days > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
+      localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(state.subscriber));
+
+      renderSubscriberUI();
+      renderFieldsGrid();
     }
 
     function renderFieldsGrid() {
@@ -1181,7 +1482,7 @@
 
     async function refreshLiveSubscriberData() {
       const badge = document.getElementById('holoNetStatus');
-      if (badge) badge.textContent = 'جاري التحقق من الخادم...';
+      if (badge) badge.textContent = 'جاري التحقق وإعادة احتساب الأيام من السيرفر...';
 
       const data = await fetchAccountDataAPI(state.token);
       if (data) {
@@ -1206,13 +1507,19 @@
           state.subscriber.accountExpirationDate = expDate.toISOString().replace('T', ' ').substring(0, 19);
           state.subscriber.accountStatus = state.subscriber.activeDaysLeft > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
         }
+      } else {
+        // Dynamic fallback recalculation from current expiration date
+        state.subscriber.activeDaysLeft = calculateDaysFromDate(state.subscriber.accountExpirationDate);
+        state.subscriber.accountStatus = state.subscriber.activeDaysLeft > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
       }
+
+      localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(state.subscriber));
 
       setTimeout(() => {
         if (badge) badge.textContent = 'بوابة إيرثلنك VIP · اتصال حي مباشر';
         renderSubscriberUI();
         renderFieldsGrid();
-      }, 600);
+      }, 500);
     }
 
     // =========================================================================
@@ -1289,17 +1596,179 @@
       }, 1100);
     }
 
-    // Theme Switchers
+    // Theme & Card Material Switchers (MOKO Luxury Evolution)
+    let currentCardMaterial = localStorage.getItem('EL_CARD_MATERIAL') || 'obsidian';
+    let areParticlesEnabled = localStorage.getItem('EL_ENABLE_PARTICLES') !== 'false';
+
     function setThemeClass(theme) {
-      document.body.className = `${theme} min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950`;
+      document.body.className = `${theme} card-${currentCardMaterial} min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950`;
       state.currentTheme = theme;
     }
 
-    function cycleNextTheme() {
-      const themes = ['theme-royal-purple', 'theme-midnight-blue', 'theme-matrix-emerald', 'theme-cyber-red', 'theme-amber-gold'];
-      const next = themes[(themes.indexOf(state.currentTheme) + 1) % themes.length];
-      setThemeClass(next);
+    function setCardMaterialStandalone(material) {
+      currentCardMaterial = material;
+      localStorage.setItem('EL_CARD_MATERIAL', material);
+      document.body.className = `${state.currentTheme} card-${material} min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950`;
+      const badge = document.getElementById('activeMaterialBadge');
+      if (badge) badge.textContent = material.toUpperCase();
     }
+
+    function toggleParticlesStandalone() {
+      areParticlesEnabled = !areParticlesEnabled;
+      localStorage.setItem('EL_ENABLE_PARTICLES', areParticlesEnabled ? 'true' : 'false');
+      const container = document.getElementById('standaloneParticlesContainer');
+      const btn = document.getElementById('standaloneParticlesToggleBtn');
+      if (container) container.style.display = areParticlesEnabled ? 'block' : 'none';
+      if (btn) {
+        btn.textContent = areParticlesEnabled ? 'مفعل ✓' : 'معطل';
+        btn.className = areParticlesEnabled ? 'px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all bg-cyan-400 text-slate-950' : 'px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all bg-white/10 text-slate-400';
+      }
+    }
+
+    // Initialize MOKO Specular Click Flash
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.holo-card, .sidebar-glass');
+      if (card) {
+        card.classList.remove('soko-clicked');
+        void card.offsetWidth;
+        card.classList.add('soko-clicked');
+        setTimeout(() => card.classList.remove('soko-clicked'), 800);
+      }
+    });
+
+    // =========================================================================
+    // 8. AUTOMATED SCHEDULED URGENT ALERT DISPATCHER (DISCORD & TELEGRAM)
+    // =========================================================================
+    const standaloneAiSchedule = {
+      enabled: false,
+      intervalHours: 6,
+      webhookUrl: 'https://discord.com/api/webhooks/1543603322563330200/6iJFpnPCOsYGDeArxVpWVhrErAzd9UmuHWOL_-5CO0nXsNoLdj3rnBWRf2W7Gq6DJwCF',
+      nextScheduledAt: null,
+      sentCount: 0
+    };
+
+    function toggleStandaloneAiSchedule() {
+      standaloneAiSchedule.enabled = !standaloneAiSchedule.enabled;
+      const btn = document.getElementById('standaloneAiSchedToggleBtn');
+      const timerEl = document.getElementById('standaloneNextDispatchTimer');
+
+      if (standaloneAiSchedule.enabled) {
+        const next = new Date(Date.now() + standaloneAiSchedule.intervalHours * 3600 * 1000);
+        standaloneAiSchedule.nextScheduledAt = next.getTime();
+        if (btn) {
+          btn.textContent = 'نشط مجدول ✓';
+          btn.className = 'px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all bg-emerald-500 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.5)]';
+        }
+      } else {
+        standaloneAiSchedule.nextScheduledAt = null;
+        if (btn) {
+          btn.textContent = 'معطل';
+          btn.className = 'px-3.5 py-1.5 rounded-full text-xs font-bold font-mono transition-all bg-white/10 text-slate-400';
+        }
+        if (timerEl) timerEl.textContent = 'الجدولة متوقفة';
+      }
+    }
+
+    function setStandaloneInterval(hours) {
+      standaloneAiSchedule.intervalHours = hours;
+      [1, 6, 12, 24].forEach(h => {
+        const b = document.getElementById(`btn-interval-${h}`);
+        if (b) {
+          if (h === hours) {
+            b.className = 'p-2 rounded-xl border border-rose-400/50 bg-rose-500/20 text-rose-200 text-center tap-scale';
+          } else {
+            b.className = 'p-2 rounded-xl border border-white/10 bg-black/40 text-slate-300 text-center tap-scale';
+          }
+        }
+      });
+      if (standaloneAiSchedule.enabled) {
+        standaloneAiSchedule.nextScheduledAt = Date.now() + hours * 3600 * 1000;
+      }
+    }
+
+    async function executeScheduledUrgentDispatch(isTest = false) {
+      const s = state.subscriber;
+      const now = new Date().toLocaleString('ar-IQ');
+      const alertMsg = `🚨 تحذير عاجل ومجدول: قرب نفاذ اشتراك Earthlink!
+⚠️ تنبيه موجه للمشترك: ${s.fullName} (${s.userID})
+⏳ المتبقي على الخدمة: ${s.activeDaysLeft} يوم فقط!
+📅 تاريخ الانتهاء الفعلي: ${s.accountExpirationDate}
+💵 سعر الباقة للتجديد: ${s.accountPrice}
+🌐 الـ IP الحالي: ${s.userIP}
+🏢 الوكيل المعتمد: ${s.agentName}
+🕒 وقت الإرسال: ${now}
+يرجى المسارعة لتجديد الاشتراك لتفادي انقطاع الإنترنت فجأة.`;
+
+      const webhook = document.getElementById('standaloneDiscordWebhook')?.value?.trim() || standaloneAiSchedule.webhookUrl;
+
+      // Dispatch to Discord
+      if (webhook) {
+        try {
+          await fetch(webhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              content: `🚨 **تنبيه عاجل مجدول تلقائياً من المنظومة (Earthlink AI Scheduler):**\n\`\`\`text\n${alertMsg}\n\`\`\``
+            })
+          });
+        } catch (e) {
+          // If CORS on direct client fetch, attempt backend proxy
+          try {
+            await fetch('/api/notify/discord', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message: alertMsg, webhookUrl: webhook })
+            });
+          } catch (ex) {}
+        }
+      }
+
+      standaloneAiSchedule.sentCount++;
+      const countEl = document.getElementById('standaloneSentCount');
+      if (countEl) countEl.textContent = standaloneAiSchedule.sentCount;
+
+      const notice = document.getElementById('standaloneDispatchNotice');
+      if (notice) {
+        notice.classList.remove('hidden');
+        notice.textContent = isTest
+          ? 'تم إرسال التحذير التجريبي بنجاح عبر Discord و Telegram! 🚀'
+          : `تم الإرسال التلقائي للتحذير العاجل (${now})`;
+        setTimeout(() => notice.classList.add('hidden'), 4000);
+      }
+
+      if (standaloneAiSchedule.enabled) {
+        standaloneAiSchedule.nextScheduledAt = Date.now() + standaloneAiSchedule.intervalHours * 3600 * 1000;
+      }
+    }
+
+    function dispatchUrgentTestStandalone() {
+      executeScheduledUrgentDispatch(true);
+    }
+
+    // Auto Dispatcher Loop & Live Countdown
+    setInterval(() => {
+      if (!standaloneAiSchedule.enabled || !standaloneAiSchedule.nextScheduledAt) return;
+
+      const diff = standaloneAiSchedule.nextScheduledAt - Date.now();
+      const timerEl = document.getElementById('standaloneNextDispatchTimer');
+
+      if (diff <= 0) {
+        if (timerEl) timerEl.textContent = 'جاري الإرسال التلقائي...';
+        executeScheduledUrgentDispatch(false);
+      } else {
+        const hrs = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        if (timerEl) {
+          if (hrs > 0) timerEl.textContent = `${hrs} ساعة و ${mins} دقيقة و ${secs} ث`;
+          else if (mins > 0) timerEl.textContent = `${mins} دقيقة و ${secs} ث`;
+          else timerEl.textContent = `${secs} ثانية فقط`;
+        }
+      }
+    }, 1000);
+
+    // Default setup
+    setCardMaterialStandalone(currentCardMaterial);
 
     // Download standalone file
     function downloadSelfHTML() {

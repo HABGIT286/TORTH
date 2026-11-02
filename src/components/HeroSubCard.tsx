@@ -4,7 +4,7 @@ import { SubscriberData } from '../types/earthlink';
 import { LiquidMeter } from './LiquidMeter';
 import { NetworkQualityCard } from './NetworkQualityCard';
 import { AnimatedIcon } from './AnimatedIcon';
-import { playHapticSound, triggerLuxuryCelebration, createClickRipple } from '../utils/effects';
+import { playHapticSound, createClickRipple } from '../utils/effects';
 import {
   Gauge,
   HardDrive,
@@ -27,13 +27,19 @@ interface HeroSubCardProps {
   t: Record<string, string>;
   onNavigateToData?: () => void;
   onNavigateToAlerts?: () => void;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
+  onUpdateDays?: (days: number) => void;
 }
 
 export const HeroSubCard: React.FC<HeroSubCardProps> = ({
   data,
   t,
   onNavigateToData,
-  onNavigateToAlerts
+  onNavigateToAlerts,
+  onRefresh,
+  isRefreshing = false,
+  onUpdateDays
 }) => {
   // Simulate subtle live network pulse
   const [liveSpeed, setLiveSpeed] = useState<number>(160);
@@ -51,7 +57,6 @@ export const HeroSubCard: React.FC<HeroSubCardProps> = ({
   const triggerActionFeedback = (e: React.MouseEvent<HTMLElement>, title: string) => {
     createClickRipple(e);
     playHapticSound('success');
-    triggerLuxuryCelebration();
     setActionNotice(title);
     setTimeout(() => setActionNotice(null), 3000);
   };
@@ -175,7 +180,90 @@ export const HeroSubCard: React.FC<HeroSubCardProps> = ({
           expirationDate={data.accountExpirationDate}
           daysLabel={t.daysLeft}
           expiresLabel={t.expiresOn}
+          onRefresh={onRefresh}
+          isRefreshing={isRefreshing}
         />
+
+        {/* Interactive Fluid Level Testing & Direct Refresh Controls */}
+        <div className="p-3 rounded-2xl bg-white/[0.04] border border-white/10 space-y-2 relative z-10">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-slate-400 font-medium font-hints flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+              <span>معاينة مستوى السائل ثلاثي الأبعاد:</span>
+            </span>
+            {onRefresh && (
+              <button
+                type="button"
+                onClick={onRefresh}
+                disabled={isRefreshing}
+                className="text-cyan-300 hover:text-cyan-200 font-bold flex items-center gap-1 cursor-pointer tap-scale disabled:opacity-50"
+              >
+                <RotateCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span>{isRefreshing ? 'جاري التحديث...' : 'تحديث من السيرفر'}</span>
+              </button>
+            )}
+          </div>
+
+          {onUpdateDays && (
+            <div className="grid grid-cols-5 gap-1.5 text-[10px] font-mono">
+              <button
+                type="button"
+                onClick={() => onUpdateDays(0)}
+                className={`py-1 rounded-lg border text-center transition-all ${
+                  data.activeDaysLeft === 0
+                    ? 'bg-cyan-500/30 border-cyan-400 text-cyan-200 font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                    : 'bg-black/30 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                0 يوم
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateDays(3)}
+                className={`py-1 rounded-lg border text-center transition-all ${
+                  data.activeDaysLeft === 3
+                    ? 'bg-cyan-500/30 border-cyan-400 text-cyan-200 font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                    : 'bg-black/30 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                3 أيام
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateDays(10)}
+                className={`py-1 rounded-lg border text-center transition-all ${
+                  data.activeDaysLeft === 10
+                    ? 'bg-cyan-500/30 border-cyan-400 text-cyan-200 font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                    : 'bg-black/30 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                10 أيام
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateDays(18)}
+                className={`py-1 rounded-lg border text-center transition-all ${
+                  data.activeDaysLeft === 18
+                    ? 'bg-cyan-500/30 border-cyan-400 text-cyan-200 font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                    : 'bg-black/30 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                18 يوم
+              </button>
+              <button
+                type="button"
+                onClick={() => onUpdateDays(30)}
+                className={`py-1 rounded-lg border text-center transition-all ${
+                  data.activeDaysLeft === 30
+                    ? 'bg-cyan-500/30 border-cyan-400 text-cyan-200 font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                    : 'bg-black/30 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                30 يوم
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Live Network Metrics Grid (Neumorphic Inset Surfaces) */}
         <div className="grid grid-cols-3 gap-2.5 mt-3 pt-3.5 border-t border-white/10 relative z-10">

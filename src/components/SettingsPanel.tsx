@@ -1,7 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { ThemeId, BackgroundPattern, TypographySettings } from '../types/earthlink';
-import { playHapticSound, triggerLuxuryCelebration, createClickRipple } from '../utils/effects';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  ThemeId,
+  BackgroundPattern,
+  TypographySettings,
+  CardMaterial
+} from '../types/earthlink';
+import { playHapticSound, createClickRipple } from '../utils/effects';
 import { CustomPickerModal, PickerOption } from './CustomPickerModal';
 import { AnimatedIcon } from './AnimatedIcon';
 import {
@@ -9,21 +14,22 @@ import {
   Type,
   Globe,
   Sparkles,
-  HelpCircle,
   Check,
-  Clock,
-  Hash,
   Languages,
   ImageIcon,
   Upload,
   RotateCcw,
-  Trash2,
   Camera,
-  Layers,
-  Loader2,
   Smartphone,
   Download,
-  ChevronLeft
+  Zap,
+  Sliders,
+  Shield,
+  Eye,
+  Activity,
+  Layers,
+  Flame,
+  MousePointerClick
 } from 'lucide-react';
 
 interface SettingsPanelProps {
@@ -40,8 +46,16 @@ interface SettingsPanelProps {
   currentLang: 'ar' | 'en';
   onLangToggle: () => void;
   onOpenInstallModal?: () => void;
+  cardMaterial: CardMaterial;
+  onCardMaterialChange: (material: CardMaterial) => void;
+  enableParticles: boolean;
+  onToggleParticles: (enable: boolean) => void;
+  enableClickFlash: boolean;
+  onToggleClickFlash: (enable: boolean) => void;
   t: Record<string, string>;
 }
+
+type SettingsSection = 'materials' | 'themes' | 'logo' | 'typography' | 'system';
 
 const LUXURY_THEMES: { id: ThemeId; nameAr: string; nameEn: string; gradient: string; tag: string; accent: string }[] = [
   { id: 'theme-royal-purple', nameAr: 'بنفسجي إمبراطوري', nameEn: 'Royal Purple', gradient: 'radial-gradient(circle at top, #9333ea, #240a45 70%, #090214)', tag: 'Earthlink Official', accent: '#a855f7' },
@@ -67,8 +81,46 @@ const BG_PATTERNS: { id: BackgroundPattern; nameAr: string; previewColor: string
   { id: 'pattern-pure-glass', nameAr: 'زجاج بلوري عميق', previewColor: 'bg-slate-950', desc: 'انعكاسات زجاجية مخملية' },
 ];
 
+const CARD_MATERIALS: { id: CardMaterial; nameAr: string; nameEn: string; desc: string; previewClass: string }[] = [
+  {
+    id: 'obsidian',
+    nameAr: 'أوبسيديان كربوني داكن',
+    nameEn: 'Carbon Obsidian',
+    desc: 'مظهر داكن فخم مع حواف انعكاسية ميكرونية عميقة ووضوح فائق للنصوص',
+    previewClass: 'card-obsidian'
+  },
+  {
+    id: 'crystal',
+    nameAr: 'كريستال زجاجي نقي',
+    nameEn: 'Pure Crystal Glass',
+    desc: 'شفافية بلورية فائقة النقاء مع هالات ضوئية وانعكاسات ناعمة',
+    previewClass: 'card-crystal'
+  },
+  {
+    id: 'frost',
+    nameAr: 'جليدي ضبابي مطفي',
+    nameEn: 'Frosted Matte Ice',
+    desc: 'تغبيش وضبابية مخملية ناعمة تحاكي أرقى الواجهات الهندسية',
+    previewClass: 'card-frost'
+  },
+  {
+    id: 'pearl',
+    nameAr: 'لؤلؤي فاخر عاكس',
+    nameEn: 'Lustrous Pearl',
+    desc: 'تدرجات لؤلؤية براقة تعكس الضوء بجمالية ملكية ناصعة',
+    previewClass: 'card-pearl'
+  },
+  {
+    id: 'liquid',
+    nameAr: 'سائل نيون متوهج',
+    nameEn: 'Liquid Ambient Glow',
+    desc: 'انعكاسات سائلة متناغمة مع ألوان الثيم وتوهج ليزري خافت ومريح للعين',
+    previewClass: 'card-liquid'
+  }
+];
+
 const FONT_OPTIONS: PickerOption[] = [
-  { id: "'Cairo', sans-serif", title: 'خط كايرو (Cairo Luxury)', subtitle: 'الخط الرسمي الأكثر فخامة وتناسقاً', previewFontFamily: "'Cairo', sans-serif", previewText: 'أهلاً بك سيد جعفر 123' },
+  { id: "'Cairo', sans-serif", title: 'خط كايرو (Cairo Luxury)', subtitle: 'الخط الرسمي الأكثر فخامة وتناسقاً', previewFontFamily: "'Cairo', sans-serif", previewText: 'أهلاً بك في المنظومة 123' },
   { id: "'Tajawal', sans-serif", title: 'خط تجوال (Tajawal Sleek)', subtitle: 'انسيابي خفيف وسلس للتلميحات والنصوص', previewFontFamily: "'Tajawal', sans-serif", previewText: 'أيام متبقية وتفاصيل الاشتراك' },
   { id: "'Almarai', sans-serif", title: 'خط المراعي (Almarai Apple)', subtitle: 'نمط نظام iOS النظيف والدقيق', previewFontFamily: "'Almarai', sans-serif", previewText: 'بوابة إيرثلنك الذكية 2026' },
   { id: "'Readex Pro', sans-serif", title: 'خط ريدكس برو (Readex Pro)', subtitle: 'عصري هندسي مميز للواجهات الذكية', previewFontFamily: "'Readex Pro', sans-serif", previewText: 'اشتراك بلس الفعلي 35,000 IQD' },
@@ -94,24 +146,27 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
   currentLang,
   onLangToggle,
   onOpenInstallModal,
+  cardMaterial,
+  onCardMaterialChange,
+  enableParticles,
+  onToggleParticles,
+  enableClickFlash,
+  onToggleClickFlash,
   t
 }) => {
-  const [showTips, setShowTips] = useState<boolean>(true);
+  const [activeSection, setActiveSection] = useState<SettingsSection>('materials');
   const [activePickerKey, setActivePickerKey] = useState<keyof TypographySettings | null>(null);
   const [pickerModalTitle, setPickerModalTitle] = useState<string>('');
   const [customAvatarUrl, setCustomAvatarUrl] = useState<string>('');
   const [showCustomAvatarInput, setShowCustomAvatarInput] = useState<boolean>(false);
-  const [customBgUrlInput, setCustomBgUrlInput] = useState<string>('');
-  const [showCustomBgUrlInput, setShowCustomBgUrlInput] = useState<boolean>(false);
-
   const [isProcessingLogo, setIsProcessingLogo] = useState<boolean>(false);
   const [isProcessingBg, setIsProcessingBg] = useState<boolean>(false);
 
-  // Hidden File Input references for Studio / Gallery
+  // Hidden File Inputs
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const bgFileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Safe image compressor with direct base64 fallback
+  // Safe image compressor
   const processImageFile = (file: File, maxDimension: number, onDone: (dataUrl: string) => void) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -170,7 +225,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
     reader.readAsDataURL(file);
   };
 
-  // Handle Logo from Studio / Gallery
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -180,12 +234,10 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       onAvatarChange(dataUrl);
       setIsProcessingLogo(false);
       playHapticSound('success');
-      triggerLuxuryCelebration();
     });
     e.target.value = '';
   };
 
-  // Handle Background Wallpaper from Studio / Gallery
   const handleBgFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -195,7 +247,6 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       onCustomBgChange(dataUrl);
       setIsProcessingBg(false);
       playHapticSound('success');
-      triggerLuxuryCelebration();
     });
     e.target.value = '';
   };
@@ -214,687 +265,661 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
   return (
     <motion.div layout className="space-y-4">
-      {/* Hidden File Inputs for Device Studio / Gallery */}
-      <input
-        ref={logoFileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleLogoFileChange}
-        className="hidden"
-      />
-      <input
-        ref={bgFileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleBgFileChange}
-        className="hidden"
-      />
+      {/* Hidden File Inputs */}
+      <input ref={logoFileInputRef} type="file" accept="image/*" onChange={handleLogoFileChange} className="hidden" />
+      <input ref={bgFileInputRef} type="file" accept="image/*" onChange={handleBgFileChange} className="hidden" />
 
-      {/* Settings Header */}
-      <div>
-        <h2 className="text-xl font-black text-white flex items-center gap-2 font-titles">
-          <span>{t.settingsTitle}</span>
-          <AnimatedIcon icon={Palette} size="md" className="text-purple-400" />
-        </h2>
-        <p className="text-xs text-slate-400 mt-0.5 font-hints">{t.settingsSubtitle}</p>
-      </div>
-
-      {/* 1. Change Subscriber Logo via Studio Gallery */}
-      <div className="clay-card rounded-3xl p-5 border border-cyan-500/35 shadow-xl space-y-4 bg-gradient-to-b from-cyan-950/20 via-slate-900/50 to-black/80 relative overflow-hidden">
-        <div className="shimmer-sweep-layer" />
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
-              <AnimatedIcon icon={Camera} size="sm" className="text-cyan-400" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-white font-titles block">
-                لوغو المشترك في الهيدر
-              </span>
-              <span className="text-[11px] text-cyan-300 font-hints">
-                اختيار مباشر من استوديو جهازك
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <p className="text-xs text-slate-300 font-hints leading-relaxed relative z-10">
-          انقر لفتح الاستوديو في هاتفك واختيار أي صورة أو شعار تريده ليظهر بجانب اسمك في أعلى التطبيق:
-        </p>
-
-        {/* Current Active Logo Preview & Studio Upload Button */}
-        <div className="neu-inset p-4 rounded-2xl bg-black/50 border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-3.5">
-            <div className="relative group">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-purple-600 to-pink-500 p-0.5 shadow-xl shadow-cyan-950/60 flex items-center justify-center overflow-hidden">
-                <img
-                  src={userAvatar || 'https://user.earthlink.iq/accountImages/138.png'}
-                  alt="Current Logo"
-                  className="w-full h-full object-cover rounded-[14px] bg-slate-900"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://user.earthlink.iq/accountImages/138.png';
-                  }}
-                />
-              </div>
-              <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-cyan-400 border-2 border-slate-950 shadow-sm" />
-            </div>
-
-            <div>
-              <span className="text-xs font-black text-white block font-titles">
-                اللوغو النشط حالياً
-              </span>
-              <span className="text-[11px] text-slate-400 font-hints block mt-0.5">
-                يظهر في شريط التنقل والقائمة الجانبية
-              </span>
-            </div>
-          </div>
-
-          {/* Open Studio Button */}
-          <div className="flex gap-2 w-full sm:w-auto">
-            <button
-              type="button"
-              disabled={isProcessingLogo}
-              onClick={(e) => {
-                createClickRipple(e);
-                playHapticSound('tap');
-                logoFileInputRef.current?.click();
-              }}
-              className="clay-btn flex-1 sm:flex-initial h-11 px-4 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold text-xs shadow-lg shadow-cyan-950/40 flex items-center justify-center gap-2 tap-interactive cursor-pointer font-titles disabled:opacity-50"
-            >
-              {isProcessingLogo ? (
-                <>
-                  <AnimatedIcon icon={Loader2} size="sm" className="text-white animate-spin" />
-                  <span>جاري التحميل...</span>
-                </>
-              ) : (
-                <>
-                  <AnimatedIcon icon={Upload} size="sm" className="text-white" />
-                  <span>فتح الاستوديو لاختيار صورة</span>
-                </>
-              )}
-            </button>
-
-            {userAvatar && userAvatar !== 'https://user.earthlink.iq/accountImages/138.png' && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  createClickRipple(e);
-                  playHapticSound('tap');
-                  onAvatarChange('https://user.earthlink.iq/accountImages/138.png');
-                }}
-                title="استعادة اللوغو الافتراضي"
-                className="h-11 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 flex items-center justify-center transition-all cursor-pointer tap-interactive"
-              >
-                <AnimatedIcon icon={RotateCcw} size="sm" className="text-slate-300" />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Custom Logo URL toggle */}
-        <div className="pt-1 relative z-10">
-          <button
-            type="button"
-            onClick={() => {
-              playHapticSound('tap');
-              setShowCustomAvatarInput(!showCustomAvatarInput);
-            }}
-            className="text-[11px] text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1.5 transition-colors cursor-pointer font-titles"
-          >
-            <AnimatedIcon icon={ImageIcon} size="sm" className="text-cyan-400" />
-            <span>{showCustomAvatarInput ? 'إخفاء رابط الصورة المباشر' : '+ أو وضع رابط صورة من الإنترنت (URL)'}</span>
-          </button>
-
-          {showCustomAvatarInput && (
-            <div className="mt-2 flex gap-2">
-              <input
-                type="text"
-                value={customAvatarUrl}
-                onChange={(e) => setCustomAvatarUrl(e.target.value)}
-                placeholder="ضع رابط صورة الشعار هنا (https://...)"
-                className="neu-inset flex-1 h-11 rounded-xl bg-black/60 border border-white/15 px-3 text-xs text-white focus:outline-none focus:border-cyan-400 font-mono"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (customAvatarUrl.trim()) {
-                    onAvatarChange(customAvatarUrl.trim());
-                    triggerLuxuryCelebration();
-                  }
-                }}
-                className="clay-btn h-11 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs tap-interactive cursor-pointer shrink-0 font-titles"
-              >
-                تطبيق
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 2. Change Program Background via Studio Gallery (خلفية البرنامج من الاستوديو) */}
-      <div className="clay-card rounded-3xl p-5 border border-pink-500/35 shadow-xl space-y-4 bg-gradient-to-b from-pink-950/20 via-slate-900/50 to-black/80 relative overflow-hidden">
-        <div className="shimmer-sweep-layer" />
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center">
-              <AnimatedIcon icon={Layers} size="sm" className="text-pink-400" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-white font-titles block">
-                خلفية البرنامج (Background Wallpaper)
-              </span>
-              <span className="text-[11px] text-pink-300 font-hints">
-                تغيير الخلفية بصورة كاملة من الاستوديو
-              </span>
-            </div>
-          </div>
-
-          {customBgImage && (
-            <span className="soft-pill text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30 font-titles">
-              خلفية الاستوديو مفعلة
-            </span>
-          )}
-        </div>
-
-        <p className="text-xs text-slate-300 font-hints leading-relaxed relative z-10">
-          يمكنك الآن فتح استوديو هاتفك واختيار أي صورة لتصبح خلفية كاملة للبرنامج فوراً:
-        </p>
-
-        {/* Upload Custom Wallpaper Button & Current Wallpaper Status */}
-        <div className="neu-inset p-4 rounded-2xl bg-black/50 border border-white/10 flex flex-col gap-3 relative z-10">
-          {customBgImage ? (
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-xl overflow-hidden border border-white/20 shadow-md shrink-0">
-                  <img src={customBgImage} alt="Custom Background" className="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-white block font-titles">صورة الخلفية الحالية</span>
-                  <span className="text-[10px] text-emerald-400 font-hints">مطبقة ومحفوظة بنجاح ✓</span>
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={isProcessingBg}
-                  onClick={(e) => {
-                    createClickRipple(e);
-                    playHapticSound('tap');
-                    bgFileInputRef.current?.click();
-                  }}
-                  className="clay-btn px-3.5 h-10 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs tap-interactive cursor-pointer flex items-center gap-1.5 font-titles disabled:opacity-50"
-                >
-                  {isProcessingBg ? <AnimatedIcon icon={Loader2} size="sm" className="text-white animate-spin" /> : <AnimatedIcon icon={Upload} size="sm" className="text-white" />}
-                  <span>تغيير</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    createClickRipple(e);
-                    playHapticSound('tap');
-                    onCustomBgChange(null);
-                  }}
-                  className="clay-btn px-3 h-10 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 font-bold text-xs tap-interactive cursor-pointer flex items-center gap-1 font-titles"
-                  title="إزالة صورة الخلفية"
-                >
-                  <AnimatedIcon icon={Trash2} size="sm" className="text-rose-300" />
-                  <span>إزالة</span>
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              type="button"
-              disabled={isProcessingBg}
-              onClick={(e) => {
-                createClickRipple(e);
-                playHapticSound('tap');
-                bgFileInputRef.current?.click();
-              }}
-              className="clay-btn w-full h-12 rounded-xl bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 text-white font-bold text-xs shadow-lg shadow-pink-950/40 flex items-center justify-center gap-2 tap-interactive cursor-pointer font-titles hover:brightness-110 disabled:opacity-50"
-            >
-              {isProcessingBg ? (
-                <>
-                  <AnimatedIcon icon={Loader2} size="sm" className="text-white animate-spin" />
-                  <span>جاري معالجة وتطبيق الخلفية...</span>
-                </>
-              ) : (
-                <>
-                  <AnimatedIcon icon={Upload} size="sm" className="text-white" />
-                  <span>فتح الاستوديو لاختيار خلفية البرنامج</span>
-                </>
-              )}
-            </button>
-          )}
-
-          {/* Alternative URL Input for Background */}
-          <div className="pt-1">
-            <button
-              type="button"
-              onClick={() => setShowCustomBgUrlInput(!showCustomBgUrlInput)}
-              className="text-[11px] text-pink-400 hover:text-pink-300 font-bold flex items-center gap-1.5 transition-colors cursor-pointer font-titles"
-            >
-              <AnimatedIcon icon={ImageIcon} size="sm" className="text-pink-400" />
-              <span>{showCustomBgUrlInput ? 'إخفاء رابط خلفية الإنترنت' : '+ أو وضع رابط صورة خلفية من الإنترنت (URL)'}</span>
-            </button>
-
-            {showCustomBgUrlInput && (
-              <div className="mt-2 flex gap-2">
-                <input
-                  type="text"
-                  value={customBgUrlInput}
-                  onChange={(e) => setCustomBgUrlInput(e.target.value)}
-                  placeholder="ضع رابط صورة الخلفية هنا (https://...)"
-                  className="neu-inset flex-1 h-11 rounded-xl bg-black/60 border border-white/15 px-3 text-xs text-white focus:outline-none focus:border-pink-400 font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (customBgUrlInput.trim()) {
-                      onCustomBgChange(customBgUrlInput.trim());
-                      playHapticSound('success');
-                      triggerLuxuryCelebration();
-                    }
-                  }}
-                  className="clay-btn h-11 px-4 rounded-xl bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs tap-interactive cursor-pointer shrink-0 font-titles"
-                >
-                  تطبيق
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Ambient Gradient Presets */}
-        <div className="space-y-2 pt-1 border-t border-white/10 relative z-10">
-          <span className="text-[11px] font-bold text-slate-300 font-titles block">
-            أو اختيار نمط متدرج مسبق (Ambient Presets):
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {BG_PATTERNS.map((p) => {
-              const isCurrent = currentBg === p.id && !customBgImage;
-              return (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => {
-                    playHapticSound('switch');
-                    onCustomBgChange(null);
-                    onBgChange(p.id);
-                  }}
-                  className={`p-3 rounded-2xl border text-right transition-all tap-interactive cursor-pointer flex items-center justify-between ${
-                    isCurrent
-                      ? 'clay-btn bg-pink-500/20 border-pink-400 text-white shadow-md ring-1 ring-pink-400'
-                      : 'neu-inset bg-black/40 border border-white/10 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  <div>
-                    <span className="text-xs font-bold font-titles block">{p.nameAr}</span>
-                    <span className="text-[10px] text-slate-400 font-hints">{p.desc}</span>
-                  </div>
-                  <span className={`w-4 h-4 rounded-full ${p.previewColor} border border-white/30 shrink-0`} />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Redesigned Luxury Themes Showcase */}
-      <div className="clay-card rounded-3xl p-5 border border-white/10 shadow-xl space-y-3 relative overflow-hidden bg-gradient-to-b from-slate-900/60 to-black/80">
-        <div className="shimmer-sweep-layer" />
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2">
-            <AnimatedIcon icon={Sparkles} size="sm" className="text-purple-400" />
-            <span className="text-sm font-bold text-white font-titles">
-              {t.pickTheme}
-            </span>
-          </div>
-          <span className="soft-pill text-[10px] text-purple-300 font-bold px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 font-mono">
-            12 ثيماً ملوكياً مجهزاً
-          </span>
-        </div>
-
-        {showTips && (
-          <p className="text-[11px] text-slate-400 leading-relaxed neu-inset p-3 rounded-2xl border border-white/5 font-hints relative z-10">
-            💡 <span className="font-semibold text-slate-200">تلميح الثيمات:</span> تم ضبط درجات التباين وتأثيرات Claymorphism وNeumorphism والبطاقات الزجاجية بعناية فائقة لتلائم كلاً من الوضع المظلم والوضع النهاري فائق الوضوح.
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-black text-white flex items-center gap-2 font-titles">
+            <span>{t.settingsTitle}</span>
+            <AnimatedIcon icon={Sliders} size="md" className="text-cyan-400" />
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5 font-hints">
+            تخصيص خامات الكاردات الزجاجية، الثيمات، الخطوط، وهوية المشترك
           </p>
-        )}
+        </div>
 
-        {/* 2-Column Responsive Card Grid for Themes */}
-        <div className="grid grid-cols-2 gap-2.5 pt-1 relative z-10">
-          {LUXURY_THEMES.map((theme) => {
-            const isSelected = currentTheme === theme.id;
-            return (
-              <div
-                key={theme.id}
-                onClick={() => {
-                  playHapticSound('switch');
-                  onThemeChange(theme.id);
-                }}
-                className={`p-3.5 rounded-2xl border cursor-pointer transition-all duration-300 tap-interactive relative overflow-hidden flex flex-col justify-between min-h-[92px] ${
-                  isSelected
-                    ? 'border-purple-400 shadow-xl shadow-purple-950/60 ring-2 ring-purple-500/50 scale-[1.01]'
-                    : 'border-white/10 hover:border-white/20 bg-black/40'
-                }`}
-                style={{
-                  background: isSelected
-                    ? `linear-gradient(145deg, rgba(255,255,255,0.12), rgba(0,0,0,0.5)), ${theme.gradient}`
-                    : theme.gradient
-                }}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/50 text-slate-200 border border-white/10 font-mono">
-                    {theme.tag}
-                  </span>
-                  <div
-                    className={`w-5 h-5 rounded-full flex items-center justify-center border transition-all ${
-                      isSelected
-                        ? 'bg-purple-600 border-white text-white shadow-[0_0_8px_rgba(168,85,247,0.8)]'
-                        : 'border-white/30 bg-black/40'
-                    }`}
-                  >
-                    {isSelected && <Check className="w-3 h-3 text-white" />}
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-xs font-black text-white leading-tight font-titles">
-                    {currentLang === 'ar' ? theme.nameAr : theme.nameEn}
-                  </h4>
-                  <span className="text-[10px] text-slate-300 opacity-80 block mt-0.5 font-english">
-                    {theme.nameEn}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+        {/* Status Pill */}
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-[11px] font-mono text-cyan-300">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+          <span>منظومة متطورة</span>
         </div>
       </div>
 
-      {/* 4. Luxury Font Customization Hub (5 Granular Font Settings) */}
-      <div className="clay-card rounded-3xl p-5 border border-white/10 shadow-xl space-y-3.5 relative overflow-hidden bg-gradient-to-b from-slate-900/60 to-black/80">
-        <div className="shimmer-sweep-layer" />
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2">
-            <AnimatedIcon icon={Type} size="sm" className="text-purple-400" />
-            <span className="text-sm font-bold text-white font-titles">
-              منظومة الخطوط المخصصة
-            </span>
-          </div>
-          <span className="soft-pill text-[10px] text-purple-300 font-mono px-2 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30">
-            5 تصنيفات مستقلة
-          </span>
-        </div>
-
-        <p className="text-xs text-slate-400 leading-relaxed font-hints relative z-10">
-          تغيير دقيق ومستقل لكل نوع خط مع معاينة بصرية كاملة وإمكانية كتابة اسم أي خط من مستودعك:
-        </p>
-
-        {/* Quick Apply Miro Modern Font (Plus Jakarta Sans) */}
+      {/* Categorized Navigation Segmented Control */}
+      <div className="p-1 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-md grid grid-cols-5 gap-1 text-[11px] font-bold font-titles">
         <button
           type="button"
           onClick={(e) => {
             createClickRipple(e);
-            playHapticSound('success');
-            triggerLuxuryCelebration();
-            const fontName = "'Plus Jakarta Sans', sans-serif";
-            onTypographyChange('clockFont', fontName);
-            onTypographyChange('hintsFont', fontName);
-            onTypographyChange('numbersFont', fontName);
-            onTypographyChange('sectionTitlesFont', fontName);
-            onTypographyChange('englishWordsFont', fontName);
+            playHapticSound('tap');
+            setActiveSection('materials');
           }}
-          className="clay-btn w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-blue-600/40 via-indigo-600/35 to-cyan-500/40 hover:from-blue-600/50 hover:to-cyan-500/50 border border-blue-400/40 text-blue-200 hover:text-white flex items-center justify-between transition-all cursor-pointer tap-interactive shadow-md relative z-10"
+          className={`py-2 px-1 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
+            activeSection === 'materials'
+              ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-slate-950 shadow-[0_0_15px_rgba(0,240,255,0.4)]'
+              : 'text-slate-400 hover:text-white hover:bg-white/5'
+          }`}
         >
-          <div className="flex items-center gap-2">
-            <AnimatedIcon icon={Sparkles} size="sm" className="text-cyan-300" />
-            <span className="text-xs font-black font-titles text-white">
-              تطبيق خط Miro العصري (Plus Jakarta Sans) لجميع الأقسام
-            </span>
-          </div>
-          <span className="text-[10px] bg-blue-500 text-white font-bold px-2 py-0.5 rounded-full font-titles">
-            تطبيق فوري
-          </span>
+          <Sparkles className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">خامات الكاردات</span>
         </button>
-
-        <div className="space-y-2 relative z-10">
-          {/* 1. خط الساعة */}
-          <div
-            onClick={() => openFontPicker('clockFont', 'تحديد خط الساعة الرقمية (12H Digital Clock)')}
-            className="neu-card p-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/10 flex items-center justify-between transition-all tap-interactive cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
-                <AnimatedIcon icon={Clock} size="sm" className="text-purple-400" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-white block font-titles">خط الساعة الرقمية</span>
-                <span className="text-[11px] text-purple-300 font-mono">
-                  {getFontName(typography.clockFont)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 font-clock text-slate-200">
-                12:45 PM
-              </span>
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-white" />
-            </div>
-          </div>
-
-          {/* 2. خط التلميحات */}
-          <div
-            onClick={() => openFontPicker('hintsFont', 'تحديد خط التلميحات والمساعد الذكي')}
-            className="neu-card p-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/10 flex items-center justify-between transition-all tap-interactive cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center">
-                <AnimatedIcon icon={HelpCircle} size="sm" className="text-amber-400" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-white block font-titles">خط التلميحات والمساعد</span>
-                <span className="text-[11px] text-amber-300 font-mono">
-                  {getFontName(typography.hintsFont)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 font-hints text-slate-200">
-                تلميح ذكي
-              </span>
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-white" />
-            </div>
-          </div>
-
-          {/* 3. خط الأرقام */}
-          <div
-            onClick={() => openFontPicker('numbersFont', 'تحديد خط الأرقام والأسعار والسرعة')}
-            className="neu-card p-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/10 flex items-center justify-between transition-all tap-interactive cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
-                <AnimatedIcon icon={Hash} size="sm" className="text-cyan-400" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-white block font-titles">خط الأرقام والسرعة والمتر</span>
-                <span className="text-[11px] text-cyan-300 font-mono">
-                  {getFontName(typography.numbersFont)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 font-numbers text-slate-200">
-                35,000 IQD
-              </span>
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-white" />
-            </div>
-          </div>
-
-          {/* 4. خط أسماء الأقسام العربية */}
-          <div
-            onClick={() => openFontPicker('sectionTitlesFont', 'تحديد خط عناوين وأسماء الأقسام العربية')}
-            className="neu-card p-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/10 flex items-center justify-between transition-all tap-interactive cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
-                <AnimatedIcon icon={Languages} size="sm" className="text-emerald-400" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-white block font-titles">خط أسماء الأقسام العربية</span>
-                <span className="text-[11px] text-emerald-300 font-mono">
-                  {getFontName(typography.sectionTitlesFont)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 font-titles text-slate-200">
-                الرئيسية
-              </span>
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-white" />
-            </div>
-          </div>
-
-          {/* 5. خط الكلمات الإنجليزية */}
-          <div
-            onClick={() => openFontPicker('englishWordsFont', 'تحديد خط الكلمات الإنجليزية والمصطلحات')}
-            className="neu-card p-3.5 rounded-2xl bg-black/40 hover:bg-black/60 border border-white/10 flex items-center justify-between transition-all tap-interactive cursor-pointer group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-pink-500/15 text-pink-400 flex items-center justify-center">
-                <AnimatedIcon icon={Type} size="sm" className="text-pink-400" />
-              </div>
-              <div>
-                <span className="text-xs font-bold text-white block font-titles">خط الكلمات الإنجليزية</span>
-                <span className="text-[11px] text-pink-300 font-mono">
-                  {getFontName(typography.englishWordsFont)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs px-2.5 py-1 rounded-xl bg-black/60 border border-white/10 font-english text-slate-200">
-                Earthlink VIP
-              </span>
-              <ChevronLeft className="w-4 h-4 text-slate-400 group-hover:text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 5. Language & Tips Preference */}
-      <div className="clay-card rounded-3xl p-5 border border-white/10 shadow-xl space-y-3 relative overflow-hidden bg-gradient-to-b from-slate-900/60 to-black/80">
-        <div className="shimmer-sweep-layer" />
-
-        {/* Language Switch */}
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
-              <AnimatedIcon icon={Globe} size="sm" className="text-cyan-400" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-white block font-titles">{t.appLanguage}</span>
-              <span className="text-[11px] text-slate-400 font-hints">عربي / English</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => {
-              playHapticSound('switch');
-              onLangToggle();
-            }}
-            className="clay-btn px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold text-xs shadow-md active:scale-95 transition-all tap-interactive font-titles cursor-pointer"
-          >
-            {t.langToggle}
-          </button>
-        </div>
-
-        {/* Tips Toggle */}
-        <div className="pt-2 border-t border-white/10 flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2 text-xs text-slate-300 font-hints">
-            <AnimatedIcon icon={HelpCircle} size="sm" className="text-amber-400" />
-            <span>عرض التلميحات والمساعد الذكي في الواجهة</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              playHapticSound('tap');
-              setShowTips(!showTips);
-            }}
-            className={`w-11 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer tap-interactive ${
-              showTips ? 'bg-purple-600' : 'bg-white/20'
-            }`}
-          >
-            <div
-              className={`w-5 h-5 rounded-full bg-white shadow-md transition-transform ${
-                showTips ? 'translate-x-5' : 'translate-x-0'
-              }`}
-            />
-          </button>
-        </div>
-      </div>
-
-      {/* 6. Android APK / PWA Mobile App Section */}
-      <div className="clay-card rounded-3xl p-5 border border-emerald-500/35 shadow-xl space-y-3 bg-gradient-to-b from-emerald-950/20 via-slate-900/50 to-black/80 relative overflow-hidden">
-        <div className="shimmer-sweep-layer" />
-
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-400/40">
-              <AnimatedIcon icon={Smartphone} size="md" className="text-emerald-400" />
-            </div>
-            <div>
-              <span className="text-sm font-bold text-white block font-titles">
-                تطبيق أندرويد (APK / WebAPK)
-              </span>
-              <span className="text-[11px] text-emerald-300 font-hints">
-                تثبيت على الهاتف كأي تطبيق أصلي مع أيقونة رسمية
-              </span>
-            </div>
-          </div>
-
-          <span className="soft-pill text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-titles">
-            جاهز للتثبيت
-          </span>
-        </div>
-
-        <p className="text-xs text-slate-300 font-hints leading-relaxed relative z-10">
-          يمكنك تشغيل وتثبيت هذا التطبيق مباشرة على هاتفك الأندرويد بشاشة كاملة وبدون متصفح مع تحديثات فورية وإشعارات:
-        </p>
 
         <button
           type="button"
-          onClick={() => {
+          onClick={(e) => {
+            createClickRipple(e);
             playHapticSound('tap');
-            if (onOpenInstallModal) onOpenInstallModal();
+            setActiveSection('themes');
           }}
-          className="clay-btn w-full h-11 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-xs shadow-md shadow-emerald-950/50 flex items-center justify-center gap-2 cursor-pointer tap-interactive font-titles hover:brightness-110 transition-all relative z-10"
+          className={`py-2 px-1 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
+            activeSection === 'themes'
+              ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+              : 'text-slate-400 hover:text-white hover:bg-white/5'
+          }`}
         >
-          <AnimatedIcon icon={Download} size="sm" className="text-slate-950" />
-          <span>فتح نافذة تثبيت وتحميل التطبيق (APK)</span>
+          <Palette className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">الثيمات والخلفيات</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            createClickRipple(e);
+            playHapticSound('tap');
+            setActiveSection('logo');
+          }}
+          className={`py-2 px-1 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
+            activeSection === 'logo'
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 shadow-[0_0_15px_rgba(16,185,129,0.4)]'
+              : 'text-slate-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Camera className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">لوغو المشترك</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            createClickRipple(e);
+            playHapticSound('tap');
+            setActiveSection('typography');
+          }}
+          className={`py-2 px-1 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
+            activeSection === 'typography'
+              ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+              : 'text-slate-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Type className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">الخطوط</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={(e) => {
+            createClickRipple(e);
+            playHapticSound('tap');
+            setActiveSection('system');
+          }}
+          className={`py-2 px-1 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 transition-all cursor-pointer ${
+            activeSection === 'system'
+              ? 'bg-gradient-to-r from-sky-500 to-blue-600 text-white shadow-[0_0_15px_rgba(56,189,248,0.4)]'
+              : 'text-slate-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <Globe className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">النظام والتطبيق</span>
         </button>
       </div>
 
-      {/* Custom Picker Modal for Font Selection */}
-      <CustomPickerModal
-        isOpen={activePickerKey !== null}
-        onClose={() => setActivePickerKey(null)}
-        title={pickerModalTitle}
-        description="اختر الخط المطلوب لمعاينته فورياً أو أضف اسم خط من مستودعك"
-        options={FONT_OPTIONS}
-        selectedId={activePickerKey ? typography[activePickerKey] : ''}
-        onSelect={(fontId) => {
-          if (activePickerKey) {
+      {/* Dynamic Content Views */}
+      <AnimatePresence mode="wait">
+        {/* =========================================================================
+            1. TAB: MOKO LUXURY GLASS MATERIALS & AMBIENT EFFECTS
+           ========================================================================= */}
+        {activeSection === 'materials' && (
+          <motion.div
+            key="sec-materials"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            {/* Card Material Presets Selection */}
+            <div className="clay-card rounded-3xl p-5 border border-cyan-400/30 shadow-xl bg-gradient-to-b from-cyan-950/20 via-slate-950/60 to-black/80 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 flex items-center justify-center shadow-[0_0_15px_rgba(0,240,255,0.3)]">
+                    <Sparkles className="w-5 h-5 text-cyan-300" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black text-white font-titles">
+                      خامات الزجاج الفاخرة للكاردات (Luxury Card Materials)
+                    </h3>
+                    <p className="text-xs text-slate-300 font-hints">
+                      اختر خامة الزجاج المتقدمة التي تنعكس على جميع كاردات وأقسام التطبيق
+                    </p>
+                  </div>
+                </div>
+
+                <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-400/30">
+                  {cardMaterial.toUpperCase()}
+                </span>
+              </div>
+
+              {/* 5 Material Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                {CARD_MATERIALS.map((mat) => {
+                  const isSelected = cardMaterial === mat.id;
+                  return (
+                    <button
+                      key={mat.id}
+                      type="button"
+                      onClick={() => {
+                        playHapticSound('tap');
+                        onCardMaterialChange(mat.id);
+                      }}
+                      className={`p-4 rounded-2xl border text-right transition-all cursor-pointer relative overflow-hidden flex flex-col justify-between ${
+                        isSelected
+                          ? 'border-cyan-400 bg-cyan-500/15 shadow-[0_0_20px_rgba(0,240,255,0.25)]'
+                          : 'border-white/10 bg-black/40 hover:bg-white/5 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full ${isSelected ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]' : 'bg-slate-600'}`} />
+                          <span className="text-sm font-black text-white font-titles">
+                            {mat.nameAr}
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-mono text-cyan-300 font-bold">
+                          {mat.nameEn}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-slate-300/90 font-hints leading-relaxed">
+                        {mat.desc}
+                      </p>
+
+                      {isSelected && (
+                        <div className="mt-3 flex items-center gap-1.5 text-[11px] font-bold text-cyan-300 font-titles">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>الخامة المفعلة حالياً</span>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Ambient Dust Particles & Specular Flash Toggles */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-white/10">
+                {/* 1. Starlight Particles Toggle */}
+                <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-amber-300 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-white font-titles block">
+                        جزيئات النجوم والشهب العائمة
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-hints">
+                        غبار ضوئي ناعم يطفو في الخلفية
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playHapticSound('switch');
+                      onToggleParticles(!enableParticles);
+                    }}
+                    className={`w-12 h-6 rounded-full p-0.5 transition-all flex items-center cursor-pointer ${
+                      enableParticles ? 'bg-cyan-500 justify-end' : 'bg-slate-700 justify-start'
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                  </button>
+                </div>
+
+                {/* 2. Glass Click Specular Flash Toggle */}
+                <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <MousePointerClick className="w-4 h-4 text-cyan-300 shrink-0" />
+                    <div>
+                      <span className="text-xs font-bold text-white font-titles block">
+                        وميض الانعكاس الزجاجي (Click Flash)
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-hints">
+                        شعاع بلوري يمر عبر الكارد عند لمسه
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playHapticSound('switch');
+                      onToggleClickFlash(!enableClickFlash);
+                    }}
+                    className={`w-12 h-6 rounded-full p-0.5 transition-all flex items-center cursor-pointer ${
+                      enableClickFlash ? 'bg-cyan-500 justify-end' : 'bg-slate-700 justify-start'
+                    }`}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 font-hints flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>معاينة فورية لخامة الزجاج المختارة:</span>
+                </span>
+                <div className="clay-card p-4 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-300">
+                      <Shield className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-black text-white font-titles block">
+                        كارد زجاجي بهندسة MOKO الفاخرة
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-hints">
+                        مظهر زجاجي عصري ثلاثي الأبعاد مع انعكاسات ضوئية نقية
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-cyan-300 font-mono">
+                    {cardMaterial}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* =========================================================================
+            2. TAB: THEMES & WALLPAPERS
+           ========================================================================= */}
+        {activeSection === 'themes' && (
+          <motion.div
+            key="sec-themes"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            {/* 12 Luxury Themes Grid */}
+            <div className="clay-card rounded-3xl p-5 border border-white/10 space-y-3">
+              <div>
+                <h3 className="text-sm font-black text-white font-titles">
+                  الثيمات الملكية الفاخرة (12 ثيم حصري)
+                </h3>
+                <p className="text-xs text-slate-400 font-hints">
+                  اختر الطابع اللوني العام للمنظومة:
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {LUXURY_THEMES.map(theme => {
+                  const isSelected = currentTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => {
+                        playHapticSound('tap');
+                        onThemeChange(theme.id);
+                      }}
+                      className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-24 cursor-pointer ${
+                        isSelected
+                          ? 'border-white bg-white/10 shadow-lg'
+                          : 'border-white/10 bg-black/40 hover:bg-white/5 text-slate-300'
+                      }`}
+                      style={{
+                        background: theme.gradient,
+                        borderColor: isSelected ? theme.accent : undefined
+                      }}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/50 text-white font-mono">
+                          {theme.tag}
+                        </span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                      </div>
+
+                      <div>
+                        <span className="text-xs font-bold text-white font-titles block truncate">
+                          {theme.nameAr}
+                        </span>
+                        <span className="text-[10px] text-slate-300 font-english block truncate">
+                          {theme.nameEn}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Background Patterns */}
+            <div className="clay-card rounded-3xl p-5 border border-white/10 space-y-3">
+              <h3 className="text-sm font-black text-white font-titles">
+                أنماط خلفيات الشاشة (Background Textures)
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {BG_PATTERNS.map(pattern => {
+                  const isSelected = currentBg === pattern.id && !customBgImage;
+                  return (
+                    <button
+                      key={pattern.id}
+                      type="button"
+                      onClick={() => {
+                        playHapticSound('tap');
+                        onCustomBgChange(null);
+                        onBgChange(pattern.id);
+                      }}
+                      className={`p-3 rounded-2xl border text-right transition-all cursor-pointer ${
+                        isSelected
+                          ? 'border-cyan-400 bg-cyan-500/20 text-white'
+                          : 'border-white/10 bg-black/40 text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      <span className="text-xs font-bold font-titles block text-white">
+                        {pattern.nameAr}
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-hints block mt-0.5">
+                        {pattern.desc}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Custom Studio Background Image */}
+              <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-white font-titles block">
+                    خلفية مخصصة من جهازك
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-hints">
+                    يمكنك رفع أي صورة من استوديو هاتفك
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={isProcessingBg}
+                    onClick={() => bgFileInputRef.current?.click()}
+                    className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{isProcessingBg ? 'جاري التحميل...' : 'فتح الاستوديو'}</span>
+                  </button>
+                  {customBgImage && (
+                    <button
+                      type="button"
+                      onClick={() => onCustomBgChange(null)}
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 border border-rose-400/30 text-rose-300 text-xs font-bold cursor-pointer"
+                    >
+                      إلغاء
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* =========================================================================
+            3. TAB: SUBSCRIBER LOGO
+           ========================================================================= */}
+        {activeSection === 'logo' && (
+          <motion.div
+            key="sec-logo"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            <div className="clay-card rounded-3xl p-5 border border-white/10 space-y-4">
+              <div>
+                <h3 className="text-sm font-black text-white font-titles">
+                  لوغو وشعار المشترك
+                </h3>
+                <p className="text-xs text-slate-400 font-hints">
+                  اختر صورة من استوديو هاتفك لتكون أيقونتك في شريط التنقل والقائمة
+                </p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 p-0.5 shadow-xl shrink-0">
+                    <img
+                      src={userAvatar || 'https://user.earthlink.iq/accountImages/138.png'}
+                      alt="Logo"
+                      className="w-full h-full object-cover rounded-[14px] bg-slate-900"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-xs font-black text-white font-titles block">
+                      اللوغو النشط حالياً
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-hints">
+                      يظهر في أعلى الهيدر والقائمة الجانبية
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={isProcessingLogo}
+                  onClick={() => logoFileInputRef.current?.click()}
+                  className="px-4 py-2 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-[0_0_15px_rgba(0,240,255,0.4)] cursor-pointer"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>{isProcessingLogo ? 'جاري التحميل...' : 'اختيار من الاستوديو'}</span>
+                </button>
+              </div>
+
+              {/* URL fallback */}
+              <div className="pt-2 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setShowCustomAvatarInput(!showCustomAvatarInput)}
+                  className="text-xs font-bold text-cyan-300 hover:text-cyan-200 cursor-pointer"
+                >
+                  {showCustomAvatarInput ? '− إخفاء إدخال الرابط' : '+ استخدام رابط صورة مباشر'}
+                </button>
+                {showCustomAvatarInput && (
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="url"
+                      value={customAvatarUrl}
+                      onChange={(e) => setCustomAvatarUrl(e.target.value)}
+                      placeholder="https://example.com/logo.png"
+                      className="flex-1 px-3 py-2 rounded-xl bg-black/40 border border-white/20 text-xs text-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (customAvatarUrl.trim()) {
+                          onAvatarChange(customAvatarUrl.trim());
+                          setCustomAvatarUrl('');
+                          setShowCustomAvatarInput(false);
+                          playHapticSound('success');
+                        }
+                      }}
+                      className="px-3 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs cursor-pointer"
+                    >
+                      تطبيق
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* =========================================================================
+            4. TAB: TYPOGRAPHY
+           ========================================================================= */}
+        {activeSection === 'typography' && (
+          <motion.div
+            key="sec-typography"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            <div className="clay-card rounded-3xl p-5 border border-white/10 space-y-4">
+              <div>
+                <h3 className="text-sm font-black text-white font-titles">
+                  تخصيص الخطوط التفصيلية (Typography)
+                </h3>
+                <p className="text-xs text-slate-400 font-hints">
+                  تحكم دقيق بنوع وحجم خط كل عنصر في الواجهة:
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                {[
+                  { key: 'sectionTitlesFont' as const, label: 'خط العناوين والتبويبات الرئيسية', current: typography.sectionTitlesFont },
+                  { key: 'hintsFont' as const, label: 'خط النصوص والتلميحات والشروحات', current: typography.hintsFont },
+                  { key: 'numbersFont' as const, label: 'خط الأرقام والبيانات والإحصائيات', current: typography.numbersFont },
+                  { key: 'clockFont' as const, label: 'خط الساعة والتاريخ والعدادات', current: typography.clockFont },
+                  { key: 'englishWordsFont' as const, label: 'خط العبارات والكلمات الإنجليزية', current: typography.englishWordsFont },
+                ].map((item) => (
+                  <div
+                    key={item.key}
+                    className="p-3 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between gap-3"
+                  >
+                    <div>
+                      <span className="text-xs font-bold text-white font-titles block">
+                        {item.label}
+                      </span>
+                      <span className="text-[11px] text-cyan-300 font-mono mt-0.5 block" style={{ fontFamily: item.current }}>
+                        {getFontName(item.current)}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => openFontPicker(item.key, item.label)}
+                      className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition-colors"
+                    >
+                      تغيير
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* =========================================================================
+            5. TAB: SYSTEM & PWA
+           ========================================================================= */}
+        {activeSection === 'system' && (
+          <motion.div
+            key="sec-system"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
+          >
+            <div className="clay-card rounded-3xl p-5 border border-white/10 space-y-4">
+              <div>
+                <h3 className="text-sm font-black text-white font-titles">
+                  إعدادات النظام والتطبيق
+                </h3>
+                <p className="text-xs text-slate-400 font-hints">
+                  اللغة، التثبيت على الهاتف، وحالة الاتصال
+                </p>
+              </div>
+
+              {/* Language Switch */}
+              <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <Languages className="w-4 h-4 text-cyan-400" />
+                  <div>
+                    <span className="text-xs font-bold text-white font-titles block">
+                      لغة الواجهة (Language)
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-hints">
+                      {currentLang === 'ar' ? 'العربية (افتراضي)' : 'English'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    playHapticSound('switch');
+                    onLangToggle();
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/30 text-xs font-bold cursor-pointer"
+                >
+                  {currentLang === 'ar' ? 'Switch to English' : 'التحويل للعربية'}
+                </button>
+              </div>
+
+              {/* Install PWA Button */}
+              {onOpenInstallModal && (
+                <div className="p-3.5 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <Smartphone className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <span className="text-xs font-bold text-white font-titles block">
+                        تثبيت كـ تطبيق أصلي (PWA)
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-hints">
+                        يعمل بدون متصفح بشاشة كاملة وسرعة فائقة
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playHapticSound('tap');
+                      onOpenInstallModal();
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-black text-xs cursor-pointer shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                  >
+                    تثبيت الآن
+                  </button>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Font Picker Modal */}
+      {activePickerKey && (
+        <CustomPickerModal
+          isOpen={!!activePickerKey}
+          onClose={() => setActivePickerKey(null)}
+          title={pickerModalTitle}
+          options={FONT_OPTIONS}
+          selectedId={typography[activePickerKey]}
+          onSelect={(fontId) => {
             onTypographyChange(activePickerKey, fontId);
-          }
-        }}
-      />
+            setActivePickerKey(null);
+            playHapticSound('success');
+          }}
+        />
+      )}
     </motion.div>
   );
 };

@@ -5,9 +5,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { SubscriberData, ThemeId, BackgroundPattern, TypographySettings, AppTab, ManualAlertSchedule } from './types/earthlink';
+import { SubscriberData, ThemeId, BackgroundPattern, TypographySettings, AppTab, ManualAlertSchedule, CardMaterial } from './types/earthlink';
 import { translations } from './utils/i18n';
-import { playHapticSound, triggerLuxuryCelebration, createClickRipple } from './utils/effects';
+import { playHapticSound, createClickRipple } from './utils/effects';
 import { DynamicIsland } from './components/DynamicIsland';
 import { HeroSubCard } from './components/HeroSubCard';
 import { ReportCard } from './components/ReportCard';
@@ -51,6 +51,7 @@ const DEFAULT_TYPOGRAPHY: TypographySettings = {
   englishWordsFont: "'Outfit', sans-serif",
 };
 
+
 export default function App() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('EL_AUTH_TOKEN'));
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => !!localStorage.getItem('EL_AUTH_TOKEN'));
@@ -68,6 +69,21 @@ export default function App() {
   const [isGithubApkModalOpen, setIsGithubApkModalOpen] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // MOKO Luxury Card Material & Ambient Effects State
+  const [cardMaterial, setCardMaterial] = useState<CardMaterial>(() => {
+    return (localStorage.getItem('EL_CARD_MATERIAL') as CardMaterial) || 'obsidian';
+  });
+
+  const [enableParticles, setEnableParticles] = useState<boolean>(() => {
+    const saved = localStorage.getItem('EL_ENABLE_PARTICLES');
+    return saved !== null ? saved === 'true' : true;
+  });
+
+  const [enableClickFlash, setEnableClickFlash] = useState<boolean>(() => {
+    const saved = localStorage.getItem('EL_ENABLE_CLICK_FLASH');
+    return saved !== null ? saved === 'true' : true;
+  });
 
   // Manual specific alert schedule state (saved in localStorage)
   const [activeAlertSchedule, setActiveAlertSchedule] = useState<ManualAlertSchedule | null>(() => {
@@ -158,9 +174,9 @@ export default function App() {
 
   const t = translations[currentLang];
 
-  // Apply theme & background pattern classes (body edges remain clean and neutral)
+  // Apply theme & background pattern & card material classes
   useEffect(() => {
-    document.body.className = `${currentTheme} ${currentBg}`;
+    document.body.className = `${currentTheme} ${currentBg} card-${cardMaterial}`;
     document.body.style.backgroundImage = '';
     document.body.style.backgroundSize = '';
     document.body.style.backgroundPosition = '';
@@ -168,7 +184,8 @@ export default function App() {
 
     localStorage.setItem('EL_THEME', currentTheme);
     localStorage.setItem('EL_BG_PATTERN', currentBg);
-  }, [currentTheme, currentBg]);
+    localStorage.setItem('EL_CARD_MATERIAL', cardMaterial);
+  }, [currentTheme, currentBg, cardMaterial]);
 
   // Apply user avatar persistence
   useEffect(() => {
@@ -192,6 +209,35 @@ export default function App() {
 
     localStorage.setItem('EL_TYPOGRAPHY', JSON.stringify(typography));
   }, [typography]);
+
+  // Save particle & click flash preferences
+  useEffect(() => {
+    localStorage.setItem('EL_ENABLE_PARTICLES', String(enableParticles));
+    localStorage.setItem('EL_ENABLE_CLICK_FLASH', String(enableClickFlash));
+  }, [enableParticles, enableClickFlash]);
+
+  // Global MOKO Specular Click Shine Flash Engine
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      if (enableClickFlash) {
+        const card = target.closest('.clay-card, .glass-luxury, .neu-card, .glass');
+        if (card) {
+          card.classList.remove('soko-clicked');
+          void (card as HTMLElement).offsetWidth; // trigger reflow
+          card.classList.add('soko-clicked');
+          setTimeout(() => {
+            card.classList.remove('soko-clicked');
+          }, 800);
+        }
+      }
+    };
+
+    window.addEventListener('click', handleGlobalClick, { passive: true });
+    return () => window.removeEventListener('click', handleGlobalClick);
+  }, [enableClickFlash]);
 
   const handleTypographyChange = (key: keyof TypographySettings, font: string) => {
     setTypography(prev => ({
@@ -243,6 +289,34 @@ export default function App() {
       setIsRefreshing(false);
     }
   }, [token, subscriberData.userID]);
+
+  // Handler for manual and real-time days update with automatic expiration calculation
+  const handleManualDaysUpdate = useCallback((days: number) => {
+    playHapticSound('tap');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const newExp = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
+    const newExpStr = newExp.toISOString().replace('T', ' ').substring(0, 19);
+
+    setSubscriberData(prev => {
+      const updated: SubscriberData = {
+        ...prev,
+        activeDaysLeft: days,
+        accountExpirationDate: newExpStr,
+        accountStatus: days > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية',
+        serviceStatusColor: days > 0 ? (days <= 3 ? 'Red' : days <= 10 ? 'Amber' : 'Green') : 'Red',
+        lastUpdated: new Date().toLocaleTimeString('ar-IQ')
+      };
+      try {
+        localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(updated));
+      } catch {
+        // Handled
+      }
+      return updated;
+    });
+
+    showNotice(`تم تعديل الأيام المتبقية إلى ${days} يوم وتحديث مستوى الكرة المائية وتاريخ الانتهاء تلقائياً! 🌊`);
+  }, []);
 
   // Dynamic Real-time auto-refresh & Daily auto-update
   useEffect(() => {
@@ -317,8 +391,7 @@ export default function App() {
   // Banner notice helper
   const showNotice = (msg: string) => {
     setBannerNotice(msg);
-    triggerLuxuryCelebration();
-    setTimeout(() => setBannerNotice(null), 4000);
+    setTimeout(() => setBannerNotice(null), 3500);
   };
 
   return (
@@ -344,6 +417,26 @@ export default function App() {
                 }
           }
         >
+          {/* Ambient Starlight Particles (MOKO Luxury Evolution) */}
+          {enableParticles && (
+            <div className="particles pointer-events-none" aria-hidden="true">
+              {Array.from({ length: 18 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="particle"
+                  style={{
+                    left: `${(i * 19) % 100}%`,
+                    animationDelay: `${(i * 0.7) % 8}s`,
+                    animationDuration: `${6 + ((i * 1.3) % 6)}s`,
+                    width: `${2 + (i % 3)}px`,
+                    height: `${2 + (i % 3)}px`,
+                    opacity: 0.2 + ((i % 5) * 0.12)
+                  }}
+                />
+              ))}
+            </div>
+          )}
+
           {/* Dynamic Island with 12h Clock & Live Status */}
           <DynamicIsland
             isOnline={isOnline}
@@ -564,6 +657,13 @@ export default function App() {
                           t={t}
                           onNavigateToData={() => setActiveTab('data')}
                           onNavigateToAlerts={() => setActiveTab('alerts')}
+                          onRefresh={() => {
+                            playHapticSound('tap');
+                            fetchUserData();
+                            showNotice('جاري تحديث بيانات المشترك من سيرفر إيرثلنك وإعادة احتساب الأيام...');
+                          }}
+                          isRefreshing={isRefreshing}
+                          onUpdateDays={handleManualDaysUpdate}
                         />
                       </motion.div>
                     )}
@@ -645,6 +745,12 @@ export default function App() {
                             setCurrentLang(prev => (prev === 'ar' ? 'en' : 'ar'));
                           }}
                           onOpenInstallModal={() => setIsInstallModalOpen(true)}
+                          cardMaterial={cardMaterial}
+                          onCardMaterialChange={setCardMaterial}
+                          enableParticles={enableParticles}
+                          onToggleParticles={setEnableParticles}
+                          enableClickFlash={enableClickFlash}
+                          onToggleClickFlash={setEnableClickFlash}
                           t={t}
                         />
                       </motion.div>

@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SubscriberData } from '../types/earthlink';
-import { triggerLuxuryCelebration, playHapticSound, createClickRipple } from '../utils/effects';
+import { SubscriberData, AiScheduledUrgentAlert } from '../types/earthlink';
+import { playHapticSound, createClickRipple } from '../utils/effects';
 import { AnimatedIcon } from './AnimatedIcon';
 import {
   Cpu,
@@ -19,7 +19,13 @@ import {
   ArrowUpRight,
   Sliders,
   Layers,
-  ChevronLeft
+  ChevronLeft,
+  AlertTriangle,
+  BellRing,
+  Calendar,
+  Radio,
+  CheckCircle2,
+  Trash2
 } from 'lucide-react';
 
 interface EarthlinkAIPanelProps {
@@ -28,6 +34,21 @@ interface EarthlinkAIPanelProps {
   onTriggerBannerNotice?: (msg: string) => void;
   onNavigateToAlerts?: () => void;
 }
+
+const DEFAULT_AI_SCHEDULE: AiScheduledUrgentAlert = {
+  enabled: false,
+  intervalHours: 6,
+  triggerOnDaysLeft: 3,
+  targetChannel: 'both',
+  discordWebhookUrl: 'https://discord.com/api/webhooks/1543603322563330200/6iJFpnPCOsYGDeArxVpWVhrErAzd9UmuHWOL_-5CO0nXsNoLdj3rnBWRf2W7Gq6DJwCF',
+  telegramBotToken: '',
+  telegramChatId: '',
+  lastSentAt: undefined,
+  nextScheduledAt: undefined,
+  totalSentCount: 0,
+  autoDispatchActive: false,
+  notifyOnCriticalOnly: false
+};
 
 export const EarthlinkAIPanel: React.FC<EarthlinkAIPanelProps> = ({
   data,
@@ -39,9 +60,198 @@ export const EarthlinkAIPanel: React.FC<EarthlinkAIPanelProps> = ({
   const [aiReport, setAiReport] = useState<string | null>(null);
   const [reportSource, setReportSource] = useState<string>('');
   const [selectedPromptType, setSelectedPromptType] = useState<'comprehensive' | 'speed' | 'gaming' | 'security'>('comprehensive');
-  const [generatedAlertStyle, setGeneratedAlertStyle] = useState<'vip' | 'urgent' | 'technical'>('vip');
+  const [generatedAlertStyle, setGeneratedAlertStyle] = useState<'vip' | 'urgent' | 'technical'>('urgent');
   const [copiedAlert, setCopiedAlert] = useState<boolean>(false);
   const [isSendingAiAlert, setIsSendingAiAlert] = useState<boolean>(false);
+
+  // Automated Urgent Warning Scheduler State (توقيت تلقائي مجدول يرسل عبر ديسكورد وتليجرام)
+  const [aiSchedule, setAiSchedule] = useState<AiScheduledUrgentAlert>(() => {
+    try {
+      const saved = localStorage.getItem('EL_AI_SCHEDULED_ALERT');
+      return saved ? { ...DEFAULT_AI_SCHEDULE, ...JSON.parse(saved) } : DEFAULT_AI_SCHEDULE;
+    } catch {
+      return DEFAULT_AI_SCHEDULE;
+    }
+  });
+
+  const [timeRemainingText, setTimeRemainingText] = useState<string>('');
+  const [isSendingTestAlert, setIsSendingTestAlert] = useState<boolean>(false);
+
+  // Save schedule changes to localStorage
+  const updateAiSchedule = (newSchedule: AiScheduledUrgentAlert) => {
+    setAiSchedule(newSchedule);
+    try {
+      localStorage.setItem('EL_AI_SCHEDULED_ALERT', JSON.stringify(newSchedule));
+    } catch {
+      // Handled
+    }
+  };
+
+  // Generate AI Alert Messages
+  const getAiGeneratedAlert = useCallback(() => {
+    const nowTime = new Date().toLocaleString('ar-IQ');
+    if (generatedAlertStyle === 'vip') {
+      return `💎 تنبيه اشتراك Earthlink VIP العصري
+المشترك: ${data.fullName} (@${data.userID})
+الباقة: ${data.accountName} (${data.accountPrice})
+الأيام المتبقية: ${data.activeDaysLeft} يوم | الانتهاء: ${data.accountExpirationDate}
+الـ IP: ${data.userIP} | الوكيل: ${data.agentName}
+الوقت: ${nowTime}
+— تم التوليد بنظام الذكاء الاصطناعي الفائق`;
+    }
+
+    if (generatedAlertStyle === 'urgent') {
+      return `🚨 تحذير عاجل ومجدول: قرب نفاذ اشتراك Earthlink!
+⚠️ تنبيه موجه للمشترك: ${data.fullName} (${data.userID})
+⏳ المتبقي على الخدمة: ${data.activeDaysLeft} يوم فقط!
+📅 تاريخ الانتهاء الفعلي: ${data.accountExpirationDate}
+💵 سعر الباقة للتجديد: ${data.accountPrice}
+🌐 الـ IP الحالي: ${data.userIP}
+🏢 الوكيل المعتمد: ${data.agentName}
+🕒 وقت الإرسال المجدول: ${nowTime}
+يرجى المسارعة لتجديد الاشتراك لتفادي انقطاع الإنترنت فجأة.`;
+    }
+
+    return `📊 تقرير Earthlink التقني الشامل
+المعرف: ${data.userID}
+IP الحساب: ${data.userIP}
+الوكيل المعتمد: ${data.agentName}
+الحالة: ${data.accountStatus}
+الرصيد الزمني: ${data.activeDaysLeft} يوم (${data.accountExpirationDate})
+التقييم: اتصال مستقر ومرخص.`;
+  }, [data, generatedAlertStyle]);
+
+  // Dispatch scheduled urgent message to Discord & Telegram
+  const dispatchScheduledUrgentNotice = useCallback(async (isTest = false) => {
+    const messageContent = getAiGeneratedAlert();
+    const tasks: Promise<any>[] = [];
+
+    // Discord Dispatch
+    if (aiSchedule.targetChannel === 'both' || aiSchedule.targetChannel === 'discord') {
+      const webhookUrl = aiSchedule.discordWebhookUrl?.trim() || undefined;
+      tasks.push(
+        fetch('/api/notify/discord', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            reportText: messageContent,
+            message: `🚨 **تنبيه عاجل مجدول (Earthlink AI Scheduler):**\n\`\`\`text\n${messageContent}\n\`\`\``,
+            webhookUrl: webhookUrl
+          })
+        }).catch(err => console.error('Discord dispatch error:', err))
+      );
+    }
+
+    // Telegram Dispatch
+    if (aiSchedule.targetChannel === 'both' || aiSchedule.targetChannel === 'telegram') {
+      tasks.push(
+        fetch('/api/notify/telegram', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: messageContent,
+            botToken: aiSchedule.telegramBotToken?.trim() || undefined,
+            chatId: aiSchedule.telegramChatId?.trim() || undefined
+          })
+        }).catch(err => console.error('Telegram dispatch error:', err))
+      );
+    }
+
+    await Promise.allSettled(tasks);
+
+    const now = new Date();
+    const nextTime = new Date(now.getTime() + (aiSchedule.intervalHours || 6) * 3600 * 1000);
+
+    const updated: AiScheduledUrgentAlert = {
+      ...aiSchedule,
+      lastSentAt: now.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit', second: '2-digit', day: 'numeric', month: 'numeric' }),
+      nextScheduledAt: nextTime.toISOString(),
+      totalSentCount: (aiSchedule.totalSentCount || 0) + 1,
+      autoDispatchActive: true
+    };
+
+    updateAiSchedule(updated);
+
+    if (onTriggerBannerNotice) {
+      onTriggerBannerNotice(
+        isTest
+          ? 'تم إرسال التحذير التجريبي بنجاح عبر القنوات المحددة! 🚀'
+          : `تم الإرسال التلقائي للتحذير العاجل! الإرسال التالي: ${nextTime.toLocaleTimeString('ar-IQ', { hour: '2-digit', minute: '2-digit' })}`
+      );
+    }
+  }, [aiSchedule, getAiGeneratedAlert, onTriggerBannerNotice]);
+
+  // Live Timer Countdown & Automatic Dispatch Loop
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!aiSchedule.enabled || !aiSchedule.nextScheduledAt) {
+        setTimeRemainingText('الجدولة متوقفة');
+        return;
+      }
+
+      const nextTarget = new Date(aiSchedule.nextScheduledAt).getTime();
+      const now = Date.now();
+      const diffMs = nextTarget - now;
+
+      if (diffMs <= 0) {
+        // Time to auto-dispatch!
+        setTimeRemainingText('جاري الإرسال التلقائي الآن...');
+        // Condition check: if critical only, check days left
+        if (!aiSchedule.notifyOnCriticalOnly || data.activeDaysLeft <= (aiSchedule.triggerOnDaysLeft || 3)) {
+          dispatchScheduledUrgentNotice(false);
+        } else {
+          // Re-schedule without spamming if days are not critical
+          const nextTime = new Date(now + (aiSchedule.intervalHours || 6) * 3600 * 1000);
+          updateAiSchedule({
+            ...aiSchedule,
+            nextScheduledAt: nextTime.toISOString()
+          });
+        }
+      } else {
+        const hours = Math.floor(diffMs / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+        if (hours > 0) {
+          setTimeRemainingText(`${hours} ساعة و ${minutes} دقيقة و ${seconds} ثانية`);
+        } else if (minutes > 0) {
+          setTimeRemainingText(`${minutes} دقيقة و ${seconds} ثانية`);
+        } else {
+          setTimeRemainingText(`${seconds} ثانية فقط`);
+        }
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [aiSchedule, data.activeDaysLeft, dispatchScheduledUrgentNotice]);
+
+  // Toggle Automated Urgent Scheduler
+  const handleToggleSchedule = () => {
+    playHapticSound('switch');
+    const willEnable = !aiSchedule.enabled;
+    const now = Date.now();
+    const nextTime = willEnable
+      ? new Date(now + (aiSchedule.intervalHours || 6) * 3600 * 1000).toISOString()
+      : undefined;
+
+    const updated: AiScheduledUrgentAlert = {
+      ...aiSchedule,
+      enabled: willEnable,
+      autoDispatchActive: willEnable,
+      nextScheduledAt: nextTime
+    };
+
+    updateAiSchedule(updated);
+
+    if (onTriggerBannerNotice) {
+      onTriggerBannerNotice(
+        willEnable
+          ? `تم تفعيل الجدولة التلقائية للتحذير العاجل كل ${aiSchedule.intervalHours} ساعات!`
+          : 'تم إيقاف الجدولة التلقائية للتحذيرات.'
+      );
+    }
+  };
 
   // Run AI Diagnostic
   const handleRunAiAnalysis = async (e: React.MouseEvent<HTMLElement>) => {
@@ -64,7 +274,6 @@ export const EarthlinkAIPanel: React.FC<EarthlinkAIPanelProps> = ({
         setAiReport(json.analysis);
         setReportSource(json.source || 'gemini-3.8-flash');
         playHapticSound('success');
-        triggerLuxuryCelebration();
         if (onTriggerBannerNotice) {
           onTriggerBannerNotice('تم إنجاز التحليل الذكي وتوليد تقرير الذكاء الاصطناعي بنجاح!');
         }
@@ -74,36 +283,6 @@ export const EarthlinkAIPanel: React.FC<EarthlinkAIPanelProps> = ({
     } finally {
       setIsAnalyzing(false);
     }
-  };
-
-  // Generate AI Alert Messages
-  const getAiGeneratedAlert = () => {
-    const nowTime = new Date().toLocaleString('ar-IQ');
-    if (generatedAlertStyle === 'vip') {
-      return `💎 تنبيه اشتراك Earthlink VIP العصري
-المشترك: ${data.fullName} (@${data.userID})
-الباقة: ${data.accountName} (${data.accountPrice})
-الأيام المتبقية: ${data.activeDaysLeft} يوم | الانتهاء: ${data.accountExpirationDate}
-الـ IP: ${data.userIP} | الوكيل: ${data.agentName}
-الوقت: ${nowTime}
-— تم التوليد بنظام الذكاء الاصطناعي الفائق`;
-    }
-
-    if (generatedAlertStyle === 'urgent') {
-      return `🚨 تنبيه عاجل بقرب انتهاء اشتراك Earthlink
-تنبيه للمشترك: ${data.fullName}
-باقي على الصلاحية: ${data.activeDaysLeft} يوم فقط!
-تاريخ النفاذ: ${data.accountExpirationDate}
-يرجى تجديد الباقة (${data.accountPrice}) قبل توقف الخدمة.`;
-    }
-
-    return `📊 تقرير Earthlink التقني الشامل
-المعرف: ${data.userID}
-IP الحساب: ${data.userIP}
-الوكيل المعتمد: ${data.agentName}
-الحالة: ${data.accountStatus}
-الرصيد الزمني: ${data.activeDaysLeft} يوم (${data.accountExpirationDate})
-التقييم: اتصال مستقر ومرخص.`;
   };
 
   const handleCopyAlert = (e: React.MouseEvent<HTMLElement>) => {
@@ -119,33 +298,21 @@ IP الحساب: ${data.userIP}
     playHapticSound('send');
     setIsSendingAiAlert(true);
 
-    const alertText = getAiGeneratedAlert();
-
     try {
-      await Promise.allSettled([
-        fetch('/api/notify/discord', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportText: alertText,
-            message: `🤖 **تنبيه Earthlink AI المصاغ بالذكاء الاصطناعي:**\n\`\`\`text\n${alertText}\n\`\`\``
-          })
-        }),
-        fetch('/api/notify/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: alertText })
-        })
-      ]);
-
-      triggerLuxuryCelebration();
-      if (onTriggerBannerNotice) {
-        onTriggerBannerNotice('تم إرسال نص التنبيه الذكي إلى ديسكورد وتليجرام بنجاح!');
-      }
-    } catch {
-      // Handled
+      await dispatchScheduledUrgentNotice(true);
     } finally {
       setIsSendingAiAlert(false);
+    }
+  };
+
+  const handleSendTestNow = async (e: React.MouseEvent<HTMLElement>) => {
+    createClickRipple(e);
+    playHapticSound('send');
+    setIsSendingTestAlert(true);
+    try {
+      await dispatchScheduledUrgentNotice(true);
+    } finally {
+      setIsSendingTestAlert(false);
     }
   };
 
@@ -155,7 +322,7 @@ IP الحساب: ${data.userIP}
 
   return (
     <motion.div layout className="space-y-4 select-none pb-4">
-      {/* 1. Master AI Neural Header (Soft Surface & Claymorphic Aura) */}
+      {/* 1. Master AI Neural Header */}
       <div className="clay-card p-5 relative overflow-hidden bg-gradient-to-br from-indigo-950/40 via-purple-950/30 to-slate-950/80 border border-purple-500/35">
         <div className="shimmer-sweep-layer" />
         <div className="flex items-center justify-between relative z-10">
@@ -175,7 +342,7 @@ IP الحساب: ${data.userIP}
                 </span>
               </div>
               <p className="text-[11px] text-purple-300 font-hints mt-0.5">
-                تحليل عصبي للباندويث وتوقع موعد النفاد وأفضل أوقات الألعاب
+                جدولة التحذيرات العاجلة التلقائية، وتحليل الباندويث والرادار
               </p>
             </div>
           </div>
@@ -188,7 +355,7 @@ IP الحساب: ${data.userIP}
           </div>
         </div>
 
-        {/* Dynamic Interactive Metrics (Soft Clay Pills) */}
+        {/* Dynamic Interactive Metrics */}
         <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/10 relative z-10 text-center">
           <div className="neu-inset p-2.5 rounded-2xl">
             <span className="text-[9px] text-slate-400 block font-hints">المعدل اليومي المقترح</span>
@@ -211,7 +378,211 @@ IP الحساب: ${data.userIP}
         </div>
       </div>
 
-      {/* 2. Interactive AI Diagnostics Query Box */}
+      {/* =========================================================================
+          2. NEW LUXURY FEATURE: AUTOMATED SCHEDULED URGENT ALERT
+             (توقيت تلقائي يبقى كرسالة مجدولة وترسل تلقائي عبر ديسكورد وتلي)
+         ========================================================================= */}
+      <div className="clay-card p-5 space-y-4 border border-rose-500/40 bg-gradient-to-br from-rose-950/30 via-slate-950/70 to-black/90 shadow-2xl relative overflow-hidden">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 flex items-center justify-center text-white shadow-[0_0_15px_rgba(244,63,94,0.4)]">
+              <BellRing className="w-5 h-5 animate-bounce" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-black text-white font-titles">
+                  التحذير العاجل المجدول تلقائياً (AI Auto-Scheduler)
+                </h3>
+                {aiSchedule.enabled && (
+                  <span className="px-2 py-0.5 text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full animate-pulse font-titles">
+                    نشط مجدول
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-rose-200/90 font-hints mt-0.5">
+                توقيت تلقائي يرسل رسائل التحذير المجدولة بصورة مستمرة إلى ديسكورد وتليجرام
+              </p>
+            </div>
+          </div>
+
+          {/* Master Enable Toggle */}
+          <button
+            type="button"
+            onClick={handleToggleSchedule}
+            className={`w-14 h-8 rounded-full p-1 transition-all duration-300 flex items-center cursor-pointer ${
+              aiSchedule.enabled
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 justify-end shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                : 'bg-slate-800 justify-start'
+            }`}
+          >
+            <motion.div
+              layout
+              className="w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center text-[10px] font-bold text-slate-950"
+            >
+              {aiSchedule.enabled ? '✓' : ''}
+            </motion.div>
+          </button>
+        </div>
+
+        {/* Live Countdown & Dispatch Status Bar */}
+        <div className="p-3.5 rounded-2xl bg-black/60 border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-cyan-400 shrink-0" />
+            <span className="text-slate-300 font-hints">موعد الإرسال التالي:</span>
+            <span className="font-bold text-cyan-300 font-numbers tracking-wide">
+              {timeRemainingText}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4 text-[11px] font-hints text-slate-400">
+            <div>
+              <span>آخر إرسال: </span>
+              <span className="text-slate-200 font-numbers">{aiSchedule.lastSentAt || 'لم يتم بعد'}</span>
+            </div>
+            <div>
+              <span>إجمالي المرسل: </span>
+              <span className="text-emerald-400 font-black font-numbers">{aiSchedule.totalSentCount || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Frequency & Interval Selector (تكرار التوقيت التلقائي) */}
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-white font-titles block">
+            تكرار التوقيت التلقائي (Interval):
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-bold font-titles">
+            {[
+              { hours: 1, label: 'كل 1 ساعة (اختبار سريع)' },
+              { hours: 6, label: 'كل 6 ساعات (موصى به)' },
+              { hours: 12, label: 'كل 12 ساعة' },
+              { hours: 24, label: 'كل 24 ساعة (يومياً)' },
+            ].map(item => (
+              <button
+                key={item.hours}
+                type="button"
+                onClick={() => {
+                  playHapticSound('tap');
+                  const nextTime = new Date(Date.now() + item.hours * 3600 * 1000).toISOString();
+                  updateAiSchedule({
+                    ...aiSchedule,
+                    intervalHours: item.hours,
+                    nextScheduledAt: aiSchedule.enabled ? nextTime : undefined
+                  });
+                }}
+                className={`py-2 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                  aiSchedule.intervalHours === item.hours
+                    ? 'bg-rose-500/25 border-rose-400 text-rose-200 shadow-[0_0_12px_rgba(244,63,94,0.3)]'
+                    : 'bg-black/40 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Target Dispatch Channels: Both, Discord, or Telegram */}
+        <div className="space-y-2">
+          <span className="text-xs font-bold text-white font-titles block">
+            قناة الإرسال التلقائي:
+          </span>
+          <div className="grid grid-cols-3 gap-2 text-xs font-bold font-titles">
+            {[
+              { id: 'both', label: 'كلاهما (Discord + Telegram)' },
+              { id: 'discord', label: 'ديسكورد فقط (Discord)' },
+              { id: 'telegram', label: 'تليجرام فقط (Telegram)' },
+            ].map(ch => (
+              <button
+                key={ch.id}
+                type="button"
+                onClick={() => {
+                  playHapticSound('tap');
+                  updateAiSchedule({ ...aiSchedule, targetChannel: ch.id as any });
+                }}
+                className={`py-2 px-1 rounded-xl border text-center transition-all cursor-pointer ${
+                  aiSchedule.targetChannel === ch.id
+                    ? 'bg-cyan-500/25 border-cyan-400 text-cyan-200 shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+                    : 'bg-black/40 border-white/10 text-slate-400 hover:text-white'
+                }`}
+              >
+                {ch.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Condition Filter Toggle */}
+        <div className="flex items-center justify-between p-3 rounded-2xl bg-black/40 border border-white/10">
+          <div>
+            <span className="text-xs font-bold text-white font-titles block">
+              حصر الإرسال عند اقتراب النفاذ (3 أيام أو أقل)
+            </span>
+            <span className="text-[10px] text-slate-400 font-hints">
+              إذا تم تفعيله، لن يتم الإرسال إلا إذا كانت الأيام المتبقية 3 أيام فأقل
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              playHapticSound('switch');
+              updateAiSchedule({ ...aiSchedule, notifyOnCriticalOnly: !aiSchedule.notifyOnCriticalOnly });
+            }}
+            className={`w-12 h-6 rounded-full p-0.5 transition-all flex items-center cursor-pointer ${
+              aiSchedule.notifyOnCriticalOnly ? 'bg-cyan-500 justify-end' : 'bg-slate-700 justify-start'
+            }`}
+          >
+            <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+          </button>
+        </div>
+
+        {/* Discord Webhook Field with MOKO default */}
+        <div className="space-y-1.5 pt-1">
+          <label className="text-[11px] font-bold text-slate-300 font-titles flex items-center gap-1.5">
+            <span>رابط ويب هوك ديسكورد (Discord Webhook):</span>
+            <span className="text-[9px] text-cyan-400 font-hints">(مُعد تلقائياً أو ضع رابطك)</span>
+          </label>
+          <input
+            type="text"
+            dir="ltr"
+            value={aiSchedule.discordWebhookUrl || ''}
+            onChange={(e) => updateAiSchedule({ ...aiSchedule, discordWebhookUrl: e.target.value })}
+            placeholder="https://discord.com/api/webhooks/..."
+            className="w-full h-10 px-3 rounded-xl bg-black/50 border border-white/15 text-white text-xs font-mono focus:border-cyan-400 focus:outline-none"
+          />
+        </div>
+
+        {/* Actions Bar */}
+        <div className="flex flex-wrap gap-2 pt-2">
+          <button
+            type="button"
+            disabled={isSendingTestAlert}
+            onClick={handleSendTestNow}
+            className="flex-1 min-w-[160px] h-11 rounded-xl bg-gradient-to-r from-rose-600 via-purple-600 to-indigo-600 hover:brightness-110 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer tap-interactive transition-all font-titles shadow-lg shadow-rose-950/40"
+          >
+            <Send className="w-4 h-4 text-white" />
+            <span>{isSendingTestAlert ? 'جاري الإرسال التجريبي...' : 'إرسال تحذير تجريبي الآن 🚀'}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              playHapticSound('tap');
+              updateAiSchedule(DEFAULT_AI_SCHEDULE);
+              if (onTriggerBannerNotice) {
+                onTriggerBannerNotice('تمت استعادة إعدادات الجدولة الافتراضية.');
+              }
+            }}
+            className="h-11 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-rose-400 border border-white/10 flex items-center justify-center gap-1.5 cursor-pointer text-xs font-titles"
+            title="إعادة ضبط الجدولة"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>إعادة ضبط</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Interactive AI Diagnostics Query Box */}
       <div className="glass-luxury rounded-3xl p-5 space-y-3.5 border border-white/15">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -225,7 +596,7 @@ IP الحساب: ${data.userIP}
           </span>
         </div>
 
-        {/* Query Filter Options (Miro Soft Pills) */}
+        {/* Query Filter Options */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
           {[
             { id: 'comprehensive', label: 'تحليل شامل' },
@@ -301,7 +672,7 @@ IP الحساب: ${data.userIP}
         </AnimatePresence>
       </div>
 
-      {/* 3. AI Peak Hours Radar & Iraq Network Schedule (ساعات الذروة والألعاب) */}
+      {/* 4. AI Peak Hours Radar & Iraq Network Schedule */}
       <div className="neu-card p-5 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -372,7 +743,7 @@ IP الحساب: ${data.userIP}
         </div>
       </div>
 
-      {/* 4. AI Smart Alert Crafting Assistant (صانع التنبيهات الذكي) */}
+      {/* 5. AI Smart Alert Crafting Assistant */}
       <div className="clay-card p-5 space-y-3 bg-gradient-to-br from-purple-950/30 via-slate-900/60 to-black/70 border border-purple-500/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -386,11 +757,11 @@ IP الحساب: ${data.userIP}
           </span>
         </div>
 
-        {/* Style Selector (Soft Pills) */}
+        {/* Style Selector */}
         <div className="flex gap-1.5 p-1 rounded-2xl bg-black/40 border border-white/10">
           {[
-            { id: 'vip', label: 'تنبيه VIP رسمي' },
             { id: 'urgent', label: 'تحذير عاجل' },
+            { id: 'vip', label: 'تنبيه VIP رسمي' },
             { id: 'technical', label: 'تقرير تقني' }
           ].map((style) => (
             <button

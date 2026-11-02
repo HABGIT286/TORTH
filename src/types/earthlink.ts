@@ -113,3 +113,21 @@ export interface ManualAlertSchedule {
   formattedScheduleText: string;
   createdAt: string;
 }
+
+export type CardMaterial = 'obsidian' | 'crystal' | 'frost' | 'pearl' | 'liquid';
+
+export interface AiScheduledUrgentAlert {
+  enabled: boolean;
+  intervalHours: number; // e.g. 6, 12, 24
+  triggerOnDaysLeft: number; // e.g. 3
+  targetChannel: 'both' | 'discord' | 'telegram';
+  discordWebhookUrl?: string;
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  lastSentAt?: string;
+  nextScheduledAt?: string;
+  totalSentCount: number;
+  autoDispatchActive: boolean;
+  notifyOnCriticalOnly: boolean;
+}
+
