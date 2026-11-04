@@ -465,30 +465,34 @@ function parseEarthlinkData(rawJson: any, fallback: SubscriberData): SubscriberD
     }
   }
 
-  // فحص تاريخ الانتهاء وحساب الأيام المتبقية
-  const expiries = findExpiry(payload);
+  const extract = (field: any, defaultVal: string): string => {
+    if (field && typeof field === 'object' && 'value' in field) {
+      return String(field.value !== undefined && field.value !== null ? field.value : defaultVal);
+    }
+    return field !== null && field !== undefined ? String(field) : defaultVal;
+  };
+
+  // 1. Direct activeDaysLeft from Earthlink server payload
+  const directDaysRaw = extract(payload.activeDaysLeft, '');
   let activeDays = fallback.activeDaysLeft;
   let expDateStr = fallback.accountExpirationDate;
 
+  // 2. Parse official expiration date
+  const expiries = findExpiry(payload);
   if (expiries.length > 0) {
     const expDate = expiries[0].date;
     expDateStr = expDate.toISOString().replace('T', ' ').substring(0, 19);
 
     const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const expOnly = new Date(expDate);
-    expOnly.setHours(0, 0, 0, 0);
-
-    const diffMs = expOnly.getTime() - now.getTime();
-    activeDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    const diffMs = expDate.getTime() - now.getTime();
+    const computedDays = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+    activeDays = computedDays;
   }
 
-  const extract = (field: any, defaultVal: string): string => {
-    if (field && typeof field === 'object' && 'value' in field) {
-      return String(field.value || defaultVal);
-    }
-    return field !== null && field !== undefined ? String(field) : defaultVal;
-  };
+  // If Earthlink provided a direct numerical activeDaysLeft, prioritize it
+  if (directDaysRaw && !isNaN(parseInt(directDaysRaw, 10))) {
+    activeDays = Math.max(0, parseInt(directDaysRaw, 10));
+  }
 
   return {
     fullName: extract(payload.fullName, fallback.fullName),
@@ -496,7 +500,7 @@ function parseEarthlinkData(rawJson: any, fallback: SubscriberData): SubscriberD
     accountName: extract(payload.accountName, fallback.accountName),
     accountPrice: extract(payload.accountPrice, fallback.accountPrice),
     accountStatus: activeDays > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية',
-    activeDaysLeft: Math.max(0, activeDays),
+    activeDaysLeft: activeDays,
     accountExpirationDate: expDateStr,
     agentName: extract(payload.agentName, fallback.agentName),
     userIP: extract(payload.userIP, fallback.userIP),
@@ -505,7 +509,7 @@ function parseEarthlinkData(rawJson: any, fallback: SubscriberData): SubscriberD
     address: extract(payload.address, fallback.address),
     email: extract(payload.email, fallback.email),
     accountImagePath: extract(payload.accountImagePath, fallback.accountImagePath),
-    serviceStatusColor: activeDays > 0 ? 'Green' : 'Red',
+    serviceStatusColor: activeDays > 0 ? (activeDays <= 3 ? 'Red' : activeDays <= 10 ? 'Amber' : 'Green') : 'Red',
     lastUpdated: new Date().toLocaleTimeString('ar-IQ'),
     isLiveConnection: true
   };

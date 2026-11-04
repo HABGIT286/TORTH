@@ -266,11 +266,11 @@ export default function App() {
   }, []);
 
   // Fetch verified user data from Earthlink multi-tier service (proxy / direct / fallback)
-  const fetchUserData = useCallback(async (authToken?: string, customUser?: string) => {
+  const fetchUserData = useCallback(async (authToken?: string, customUser?: string, isSilent = false) => {
     const currentToken = authToken || token;
     if (!currentToken) return;
 
-    setIsRefreshing(true);
+    if (!isSilent) setIsRefreshing(true);
 
     try {
       const activeUser = customUser || localStorage.getItem('EL_SAVED_USERNAME') || subscriberData.userID || 'مشترك إيرثلنك VIP';
@@ -286,7 +286,7 @@ export default function App() {
     } catch {
       // Keep existing data on transient network hiccups
     } finally {
-      setIsRefreshing(false);
+      if (!isSilent) setIsRefreshing(false);
     }
   }, [token, subscriberData.userID]);
 
@@ -318,7 +318,7 @@ export default function App() {
     showNotice(`تم تعديل الأيام المتبقية إلى ${days} يوم وتحديث مستوى الكرة المائية وتاريخ الانتهاء تلقائياً! 🌊`);
   }, []);
 
-  // Dynamic Real-time auto-refresh & Daily auto-update
+  // Continuous Dynamic Live Auto-Polling (الاتصال المستمر الديناميكي)
   useEffect(() => {
     if (!isLoggedIn) return;
 
@@ -329,16 +329,16 @@ export default function App() {
       const lastCheck = localStorage.getItem('EL_LAST_DAILY_CHECK');
       const today = new Date().toDateString();
       if (lastCheck && lastCheck !== today) {
-        fetchUserData();
+        fetchUserData(undefined, undefined, true);
       }
     };
 
     const dailyTimer = setInterval(checkDailyUpdate, 60000);
 
-    // Live sync interval every 60s
+    // Continuous dynamic heartbeat polling every 20s
     const liveTimer = setInterval(() => {
-      fetchUserData();
-    }, 60000);
+      fetchUserData(undefined, undefined, true);
+    }, 20000);
 
     const handleFocus = () => {
       if (document.visibilityState === 'visible') {

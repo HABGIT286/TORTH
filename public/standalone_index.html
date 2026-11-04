@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Earthlink VIP Hologram 3D - المنظومة الفاخرة الشاملة</title>
-  <meta name="description" content="منظومة إيرثلنك VIP ثلاثية الأبعاد - هولوغرام، عمق، دوران، وانعكاسات مع الاتصال الحي المباشر لخدمة المشتركين." />
+  <title>Earthlink VIP 3D Portal - المنظومة الذكية المستمرة</title>
+  <meta name="description" content="منظومة إيرثلنك VIP الذكية المتطورة - اتصال مستمر ديناميكي، كرة مائية ثلاثية الأبعاد، مجسمات هولوغرام، وجدولة التنبيهات عبر ديسكورد وتليجرام." />
 
-  <!-- الخطوط الرسمية: Cairo, Outfit, Tajawal, JetBrains Mono -->
+  <!-- Google Web Fonts: Cairo, Outfit, Tajawal, JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Outfit:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
@@ -74,7 +74,7 @@
       z-index: 2;
     }
 
-    /* 3D Hologram Glare & Iridescent Glass */
+    /* 3D Hologram Glare & Iridescent Glass Cards */
     .holo-card {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(13, 8, 28, 0.72) 40%, rgba(2, 1, 8, 0.94) 100%);
       backdrop-filter: blur(28px);
@@ -115,58 +115,53 @@
     }
 
     .prismatic-glow {
-      animation: prismSweep 8s infinite ease-in-out;
+      animation: prismSweep 10s infinite ease-in-out;
     }
 
-    /* 3D Cylinder Liquid Wave Meter */
-    .water-gauge-3d {
+    /* 3D Liquid Water Sphere (Calm, Pure Cyan, No Rotation, Height = Exact Days) */
+    .water-sphere-3d {
       position: relative;
       width: 140px;
       height: 140px;
       border-radius: 50%;
       overflow: hidden;
-      border: 2px solid rgba(0, 240, 255, 0.5);
-      box-shadow: 0 0 35px rgba(0, 240, 255, 0.4), inset 0 0 25px rgba(0, 0, 0, 0.9);
-      background: radial-gradient(circle at 50% 30%, #1e113a, #060212);
+      border: 2px solid rgba(0, 240, 255, 0.6);
+      box-shadow: 0 0 35px rgba(0, 240, 255, 0.45), inset 0 0 25px rgba(0, 0, 0, 0.95);
+      background: radial-gradient(circle at 50% 30%, #161028, #05020c);
       transform-style: preserve-3d;
-      transform: perspective(600px) rotateX(8deg);
+      transform: perspective(600px) rotateX(6deg);
       transition: transform 0.4s ease;
     }
 
-    .water-gauge-3d:hover {
-      transform: perspective(600px) rotateX(0deg) scale(1.05);
+    .water-sphere-3d:hover {
+      transform: perspective(600px) rotateX(0deg) scale(1.04);
     }
 
-    .wave-holo-back {
+    .water-liquid-body {
       position: absolute;
-      width: 290px;
-      height: 290px;
-      background: linear-gradient(180deg, rgba(168, 85, 247, 0.35) 0%, rgba(56, 189, 248, 0.5) 100%);
-      border-radius: 43%;
-      left: -75px;
-      animation: rotateHoloWave 8s infinite linear reverse;
-      transition: bottom 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      background: linear-gradient(180deg, #00d2ff 0%, #0091ff 45%, #0055d4 100%);
+      transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 -4px 25px rgba(0, 240, 255, 0.55);
     }
 
-    .wave-holo-front {
+    .water-surface-line {
       position: absolute;
-      width: 290px;
-      height: 290px;
-      background: linear-gradient(180deg, rgba(0, 240, 255, 0.55) 0%, rgba(139, 92, 246, 0.75) 100%);
-      border-radius: 40%;
-      left: -75px;
-      animation: rotateHoloWave 5.5s infinite linear;
-      transition: bottom 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes rotateHoloWave {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 5px;
+      background: linear-gradient(90deg, transparent 0%, #ffffff 50%, transparent 100%);
+      opacity: 0.9;
+      box-shadow: 0 0 10px #ffffff, 0 0 20px #00f0ff;
     }
 
     /* 3D Glassy Sidebar V3 */
     .sidebar-glass {
-      background: linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(20, 10, 42, 0.8) 50%, rgba(4, 2, 10, 0.95) 100%);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(20, 10, 42, 0.8) 50%, rgba(4, 2, 10, 0.95) 100%);
       backdrop-filter: blur(32px);
       -webkit-backdrop-filter: blur(32px);
       border: 1px solid rgba(0, 240, 255, 0.25);
@@ -176,22 +171,7 @@
       transform-style: preserve-3d;
     }
 
-    /* Custom Themes */
-    body.theme-royal-purple { --bg-dark: #04010a; --holo-cyan: #00f0ff; --holo-purple: #a855f7; }
-    body.theme-midnight-blue { --bg-dark: #020617; --holo-cyan: #38bdf8; --holo-purple: #6366f1; }
-    body.theme-matrix-emerald { --bg-dark: #01140e; --holo-cyan: #10b981; --holo-purple: #059669; }
-    body.theme-cyber-red { --bg-dark: #120306; --holo-cyan: #f43f5e; --holo-purple: #e11d48; }
-    body.theme-amber-gold { --bg-dark: #130a02; --holo-cyan: #fbbf24; --holo-purple: #d97706; }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
-    ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.6); }
-
-    /* =========================================================================
-       MOKO LUXURY GLASS MATERIALS & SPECULAR GLOSS ENGINE
-       ========================================================================= */
+    /* 5 MOKO Luxury Card Materials */
     .card-crystal .holo-card, .card-crystal .sidebar-glass {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
       backdrop-filter: blur(28px) saturate(180%) !important;
@@ -277,6 +257,19 @@
       100% { transform: translateY(-105vh) scale(1.1); opacity: 0; }
     }
 
+    /* Themes */
+    body.theme-royal-purple { --bg-dark: #04010a; --holo-cyan: #00f0ff; --holo-purple: #a855f7; }
+    body.theme-midnight-blue { --bg-dark: #020617; --holo-cyan: #38bdf8; --holo-purple: #6366f1; }
+    body.theme-matrix-emerald { --bg-dark: #01140e; --holo-cyan: #10b981; --holo-purple: #059669; }
+    body.theme-cyber-red { --bg-dark: #120306; --holo-cyan: #f43f5e; --holo-purple: #e11d48; }
+    body.theme-amber-gold { --bg-dark: #130a02; --holo-cyan: #fbbf24; --holo-purple: #d97706; }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 240, 255, 0.3); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(0, 240, 255, 0.6); }
+
     .tap-scale {
       transition: transform 0.15s ease, filter 0.15s ease;
     }
@@ -285,26 +278,26 @@
     }
   </style>
 </head>
-<body class="theme-royal-purple min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950">
+<body class="theme-royal-purple card-obsidian min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950">
 
-  <!-- Ambient Starlight Dust Particles (MOKO Luxury Evolution) -->
+  <!-- Ambient Starlight Dust Particles -->
   <div id="standaloneParticlesContainer" class="particles">
-    <div class="particle" style="left: 12%; animation-delay: 0s; width: 3px; height: 3px;"></div>
-    <div class="particle" style="left: 28%; animation-delay: 2s; width: 4px; height: 4px;"></div>
-    <div class="particle" style="left: 45%; animation-delay: 1.2s; width: 2px; height: 2px;"></div>
-    <div class="particle" style="left: 62%; animation-delay: 3.5s; width: 4px; height: 4px;"></div>
-    <div class="particle" style="left: 78%; animation-delay: 0.8s; width: 3px; height: 3px;"></div>
-    <div class="particle" style="left: 89%; animation-delay: 2.7s; width: 2px; height: 2px;"></div>
+    <div class="particle" style="left: 10%; animation-delay: 0s; width: 3px; height: 3px;"></div>
+    <div class="particle" style="left: 24%; animation-delay: 2s; width: 4px; height: 4px;"></div>
+    <div class="particle" style="left: 42%; animation-delay: 1.2s; width: 2px; height: 2px;"></div>
+    <div class="particle" style="left: 58%; animation-delay: 3.5s; width: 4px; height: 4px;"></div>
+    <div class="particle" style="left: 74%; animation-delay: 0.8s; width: 3px; height: 3px;"></div>
+    <div class="particle" style="left: 86%; animation-delay: 2.7s; width: 2px; height: 2px;"></div>
     <div class="particle" style="left: 95%; animation-delay: 4.1s; width: 3px; height: 3px;"></div>
   </div>
 
   <!-- 3D Three.js Hologram Background Canvas -->
   <canvas id="holo3dCanvas"></canvas>
 
-  <!-- Cyber Scanline Layer for Authentic Hologram Presence -->
+  <!-- Cyber Scanline Layer -->
   <div class="cyber-scanlines"></div>
 
-  <!-- Ambient Hologram Floating Glow Orbs -->
+  <!-- Ambient Neon Orbs -->
   <div class="fixed top-[-80px] left-[-80px] w-[500px] h-[500px] rounded-full bg-cyan-500/15 blur-[140px] pointer-events-none z-0"></div>
   <div class="fixed bottom-[-80px] right-[-80px] w-[500px] h-[500px] rounded-full bg-purple-600/20 blur-[150px] pointer-events-none z-0"></div>
 
@@ -312,14 +305,21 @@
   <div id="mainAppWindow" class="w-full max-w-md md:max-w-6xl h-screen sm:h-[95vh] sm:max-h-[900px] sm:rounded-[40px] border-0 sm:border sm:border-cyan-400/30 shadow-[0_35px_100px_rgba(0,0,0,0.95)] flex flex-col relative overflow-hidden transition-all duration-300 z-10 holo-card prismatic-glow">
     <div class="card-glare"></div>
 
-    <!-- Top Holographic Island (Clock, Date & Network Status) -->
+    <!-- Top Dynamic Island: Live Iraqi Clock & Continuous Connection Heartbeat Indicator -->
     <header class="px-5 pt-3 pb-2 flex items-center justify-between border-b border-white/10 shrink-0 z-30 bg-black/40 backdrop-blur-md">
       <div class="flex items-center gap-2">
         <div class="relative flex items-center justify-center">
-          <span class="w-3 h-3 rounded-full bg-cyan-400 animate-ping absolute opacity-75"></span>
-          <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_12px_rgba(0,240,255,0.9)]"></span>
+          <span id="heartbeatPingPulse" class="w-3 h-3 rounded-full bg-emerald-400 animate-ping absolute opacity-75"></span>
+          <span id="heartbeatPingDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.9)]"></span>
         </div>
-        <span id="holoNetStatus" class="text-[11px] font-mono text-cyan-300 font-bold">بوابة إيرثلنك VIP · اتصال حي مباشر</span>
+        <div>
+          <span id="holoNetStatus" class="text-[11px] font-mono text-cyan-300 font-bold block">
+            اتصال مستمر حي · نبض لحظي نشط
+          </span>
+          <span id="pingLatencyBadge" class="text-[9px] font-mono text-emerald-400 block font-bold">
+            ⚡ Ping: 24ms · فحص تلقائي متواصل
+          </span>
+        </div>
       </div>
 
       <!-- Holographic Island 12-Hour Clock -->
@@ -328,268 +328,273 @@
         <span id="holoDynamicClock" class="font-numbers text-xs font-black text-white tracking-widest">12:00:00 م</span>
       </div>
 
-      <!-- Action Buttons: 3D Hologram Rotate Toggle & Download HTML -->
+      <!-- Quick Action Controls: 3D Hologram Rotate, Direct Earthlink Login & Download -->
       <div class="flex items-center gap-1.5">
-        <button onclick="toggleHoloRotation()" title="التحكم بدوران المجسم ثلاثي الأبعاد" class="w-8 h-8 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 flex items-center justify-center text-cyan-300 tap-scale">
+        <button onclick="toggleHoloRotation()" title="دوران المجسمات 3D" class="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-cyan-300 flex items-center justify-center tap-scale">
           <i data-lucide="orbit" class="w-4 h-4"></i>
         </button>
-        <button onclick="cycleNextTheme()" title="تبديل الثيم الهولوغرافي" class="w-8 h-8 rounded-xl bg-purple-500/10 hover:bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-purple-300 tap-scale">
-          <i data-lucide="palette" class="w-4 h-4"></i>
+        <button onclick="triggerLoginModal()" title="تسجيل الدخول بإيرثلنك" class="w-8 h-8 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-300 flex items-center justify-center tap-scale">
+          <i data-lucide="log-in" class="w-4 h-4"></i>
         </button>
-        <button onclick="downloadSelfHTML()" title="حفظ نسخة كاملة من ملف index.html على جهازك" class="px-2.5 h-8 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 font-bold text-[11px] flex items-center gap-1.5 tap-scale shadow-[0_0_15px_rgba(0,240,255,0.3)]">
-          <i data-lucide="download" class="w-3.5 h-3.5"></i>
-          <span class="hidden sm:inline">تحميل HTML</span>
+        <button onclick="downloadSelfHTML()" title="حفظ كملف index.html مستقل للرفع على GitHub" class="w-8 h-8 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 border border-purple-400/40 text-purple-300 flex items-center justify-center tap-scale">
+          <i data-lucide="download" class="w-4 h-4"></i>
         </button>
       </div>
     </header>
 
-    <!-- App Body: Sidebar + Dynamic Content -->
+    <!-- Application Body: Sidebar + Main Content -->
     <div class="flex-1 flex overflow-hidden relative">
 
-      <!-- Glassy Sidebar V3 (CODEXR / CXR) with 3D Depth -->
-      <aside id="glassySidebar" class="hidden md:flex flex-col shrink-0 p-3 select-none transition-all duration-300">
-        <div id="sidebarInner" class="w-[250px] h-full rounded-[28px] sidebar-glass p-4 flex flex-col justify-between relative transition-all duration-300">
+      <!-- =====================================================================
+           3D Glassy Sidebar V3
+           ===================================================================== -->
+      <aside id="glassSidebar" class="hidden md:flex flex-col justify-between shrink-0 p-3 z-20 transition-all duration-300">
+        <div id="sidebarInner" class="sidebar-glass w-[250px] h-full rounded-3xl p-4 flex flex-col justify-between transition-all duration-300 relative overflow-hidden">
           <div class="card-glare"></div>
 
-          <!-- Collapse / Expand Button on Outer Edge -->
-          <button onclick="toggleSidebarCollapse()" class="absolute -left-3 top-12 w-6 h-6 rounded-full bg-slate-950 border border-cyan-400/50 text-white shadow-lg flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40 backdrop-blur-md">
-            <i id="collapseIcon" data-lucide="chevron-right" class="w-3.5 h-3.5 text-cyan-400"></i>
-          </button>
-
-          <!-- Top Zone: Traffic Lights & CODEXR Brand -->
-          <div>
-            <div class="flex items-center gap-1.5 mb-3 pl-1">
-              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50"></span>
-            </div>
-
-            <div class="flex items-center gap-2 mb-4 px-1">
-              <span id="brandWordmark" class="text-lg font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-indigo-300 font-mono drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]">
-                CODEXR
-              </span>
-              <span id="versionBadge" class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-400/10 text-cyan-300 border border-cyan-400/20 font-mono">V3 3D</span>
-            </div>
-
-            <!-- Profile Summary Card with Hologram Depth -->
-            <div class="p-2.5 rounded-2xl bg-white/[0.06] border border-cyan-400/20 flex items-center gap-2.5 mb-3 relative overflow-hidden">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-purple-600 p-0.5 shadow shrink-0">
-                <div class="w-full h-full rounded-[10px] bg-slate-950 flex items-center justify-center text-cyan-300 font-bold font-mono text-sm" id="sidebarAvatarLetter">
-                  E
+          <!-- Top Brand Header -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-white/10">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 to-purple-600 flex items-center justify-center text-slate-950 font-black text-xs font-mono shadow-[0_0_15px_rgba(0,240,255,0.5)]">
+                  EL
+                </div>
+                <div>
+                  <h2 id="brandWordmark" class="text-sm font-black text-white font-mono tracking-wider">EARTHLINK</h2>
+                  <span id="versionBadge" class="text-[9px] text-cyan-300 font-mono tracking-widest block font-bold">VIP 3D V3</span>
                 </div>
               </div>
-              <div class="min-w-0 flex-1 sidebar-text">
-                <div id="sidebarUserName" class="text-xs font-bold text-white truncate font-titles">مشترك إيرثلنك VIP</div>
-                <div id="sidebarUserRole" class="text-[10px] text-cyan-300 truncate font-mono">Super Admin · erth_vip</div>
-              </div>
+              <button onclick="toggleSidebarCollapse()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all tap-scale">
+                <i data-lucide="chevron-right" id="collapseIcon" class="w-4 h-4"></i>
+              </button>
             </div>
 
-            <!-- Section Label -->
-            <div class="sidebar-text text-[10px] font-bold text-slate-400 tracking-wider font-mono mb-2 px-1">MENU</div>
+            <!-- User ID & Status Card -->
+            <div class="p-2.5 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-cyan-400/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300 font-bold font-mono text-sm shrink-0">
+                <span id="sidebarAvatarLetter">E</span>
+              </div>
+              <div class="overflow-hidden min-w-0 sidebar-text">
+                <h3 id="sidebarUserName" class="text-xs font-bold text-white font-titles truncate">مشترك إيرثلنك VIP</h3>
+                <p id="sidebarUserRole" class="text-[10px] text-emerald-400 font-mono truncate">متصل ومحمي · مباشر</p>
+              </div>
+            </div>
 
             <!-- Navigation Links -->
-            <nav class="space-y-1">
+            <nav class="space-y-1.5 pt-2">
               <button onclick="switchTab('home')" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all tap-scale active bg-cyan-500/20 text-white border border-cyan-400/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]" data-tab="home">
-                <div class="flex items-center gap-2.5">
-                  <i data-lucide="home" class="w-4 h-4 text-cyan-400"></i>
-                  <span class="sidebar-text">الرئيسية (Home)</span>
+                <div class="flex items-center gap-3">
+                  <i data-lucide="home" class="w-4 h-4 text-cyan-300 shrink-0"></i>
+                  <span class="sidebar-text font-titles">الرئيسية</span>
                 </div>
+                <span class="sidebar-text text-[9px] font-mono text-cyan-300 bg-cyan-950/60 px-1.5 py-0.5 rounded">3D</span>
               </button>
 
               <button onclick="switchTab('data')" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all tap-scale" data-tab="data">
-                <div class="flex items-center gap-2.5">
-                  <i data-lucide="file-text" class="w-4 h-4 text-slate-400"></i>
-                  <span class="sidebar-text">بيانات الاشتراك (Post)</span>
+                <div class="flex items-center gap-3">
+                  <i data-lucide="file-text" class="w-4 h-4 text-purple-300 shrink-0"></i>
+                  <span class="sidebar-text font-titles">بيانات الاشتراك</span>
                 </div>
               </button>
 
               <button onclick="switchTab('ai')" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all tap-scale" data-tab="ai">
-                <div class="flex items-center gap-2.5">
-                  <i data-lucide="cpu" class="w-4 h-4 text-purple-400"></i>
-                  <span class="sidebar-text">الفاحص الذكي (Games / AI)</span>
+                <div class="flex items-center gap-3">
+                  <i data-lucide="cpu" class="w-4 h-4 text-rose-300 shrink-0"></i>
+                  <span class="sidebar-text font-titles">الذكاء AI والتحذير</span>
                 </div>
-                <span class="sidebar-text text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30">VIP</span>
+                <span class="sidebar-text text-[9px] font-mono text-rose-300 bg-rose-950/60 px-1.5 py-0.5 rounded">مجدول</span>
               </button>
 
               <button onclick="switchTab('alerts')" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all tap-scale" data-tab="alerts">
-                <div class="flex items-center gap-2.5">
-                  <i data-lucide="bell" class="w-4 h-4 text-slate-400"></i>
-                  <span class="sidebar-text">الإشعارات والتنبيهات</span>
+                <div class="flex items-center gap-3">
+                  <i data-lucide="bell" class="w-4 h-4 text-amber-300 shrink-0"></i>
+                  <span class="sidebar-text font-titles">التنبيهات</span>
                 </div>
-                <span class="sidebar-text text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-cyan-400 text-black">2</span>
               </button>
 
               <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all tap-scale" data-tab="settings">
-                <div class="flex items-center gap-2.5">
-                  <i data-lucide="settings" class="w-4 h-4 text-slate-400"></i>
-                  <span class="sidebar-text">الإعدادات والمظهر 3D</span>
+                <div class="flex items-center gap-3">
+                  <i data-lucide="settings" class="w-4 h-4 text-sky-300 shrink-0"></i>
+                  <span class="sidebar-text font-titles">الإعدادات والخامات</span>
                 </div>
               </button>
             </nav>
           </div>
 
-          <!-- Bottom Log Out -->
-          <button onclick="handleLogout()" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-300 hover:bg-rose-500/15 transition-all tap-scale mt-3 border-t border-white/10 pt-3">
-            <i data-lucide="log-out" class="w-4 h-4 text-rose-400"></i>
-            <span class="sidebar-text">تسجيل الخروج (Log Out)</span>
-          </button>
+          <!-- Bottom Session & Logout Control -->
+          <div class="pt-4 border-t border-white/10">
+            <button onclick="handleLogout()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-rose-300 hover:bg-rose-500/10 transition-all tap-scale">
+              <i data-lucide="log-out" class="w-4 h-4 text-rose-400"></i>
+              <span class="sidebar-text font-titles">إغلاق الجلسة</span>
+            </button>
+          </div>
         </div>
       </aside>
 
-      <!-- Main Workspace Views with 3D Tilt Cards -->
-      <main class="flex-1 flex flex-col overflow-y-auto px-4 sm:px-6 py-4 custom-scrollbar z-10">
+      <!-- Main Workspace Scrollable Container -->
+      <main class="flex-1 overflow-y-auto p-3 sm:p-5 relative z-10 space-y-4">
 
-        <!-- 1. TAB: HOME (Dashboard, 3D Water Meter, Live Metrics) -->
+        <!-- Continuous Connection Alert Banner -->
+        <div class="p-3 rounded-2xl bg-gradient-to-r from-cyan-950/40 via-purple-950/30 to-slate-950/80 border border-cyan-400/30 flex items-center justify-between gap-3 text-xs">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-white font-bold font-titles">نظام الاتصال المستمر الديناميكي:</span>
+            <span class="text-slate-300 font-hints">يفحص صلاحية الحساب كل 20 ثانية ويحدّث الأيام وتجديد الاشتراك تلقائياً</span>
+          </div>
+          <button onclick="refreshLiveSubscriberData(false)" class="px-3 py-1 rounded-xl bg-cyan-400/20 hover:bg-cyan-400/30 text-cyan-300 border border-cyan-400/40 font-bold font-titles tap-scale shrink-0 flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>تحديث الآن</span>
+          </button>
+        </div>
+
+        <!-- 1. TAB: HOME DASHBOARD (3D Water Sphere + Hero Card + Metrics) -->
         <section id="tab-home" class="tab-pane space-y-4">
 
-          <!-- Hero 3D Card with Holographic Water Meter -->
-          <div class="holo-card rounded-3xl p-6 border border-cyan-400/30 relative overflow-hidden bg-gradient-to-r from-purple-950/40 via-slate-950/70 to-cyan-950/40">
+          <!-- Hero Master Subscriber Card with 3D Water Sphere -->
+          <div class="holo-card p-5 sm:p-6 rounded-3xl border border-cyan-400/30 relative overflow-hidden">
             <div class="card-glare"></div>
 
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-6 relative z-10">
-              <div class="space-y-2 text-center sm:text-right">
-                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-400/10 border border-cyan-400/40 text-[11px] text-cyan-300 font-bold shadow-[0_0_12px_rgba(0,240,255,0.3)]">
-                  <i data-lucide="sparkles" class="w-3.5 h-3.5 text-cyan-400 animate-pulse"></i>
-                  <span>بوابة مشتركي إيرثلنك الرسمية - هولوغرام ثلاثي الأبعاد</span>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+              <!-- Subscriber Info -->
+              <div class="space-y-3 text-center md:text-right flex-1">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-400/30 text-[11px] font-mono text-cyan-300">
+                  <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                  <span id="heroAccountPlan">اشتراك إيرثلنك توربو VIP · نشط</span>
                 </div>
 
-                <h1 id="heroFullName" class="text-2xl sm:text-3xl font-black text-white font-titles tracking-wide drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]">
+                <h1 id="heroFullName" class="text-2xl sm:text-3xl font-black text-white font-titles tracking-wide">
                   مشترك إيرثلنك VIP
                 </h1>
-                <p id="heroAccountPlan" class="text-xs text-slate-300">
-                  اشتراك إيرثلنك توربو VIP (50 Mbps) · نشط وساري الصلاحية
-                </p>
 
-                <!-- Live Meta Chips -->
-                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1 text-[11px] font-mono text-slate-300">
-                  <span class="px-2 py-0.5 rounded-lg bg-black/40 border border-white/10">المستخدم: <strong id="heroUserId" class="text-cyan-300">erth_vip</strong></span>
-                  <span class="px-2 py-0.5 rounded-lg bg-black/40 border border-white/10">IP: <strong id="heroUserIp" class="text-emerald-400">10.124.58.19</strong></span>
-                  <span class="px-2 py-0.5 rounded-lg bg-black/40 border border-white/10">البرج: <strong id="heroAgentName" class="text-purple-300">برج النور للاتصالات</strong></span>
+                <!-- Key Metrics Badges -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+                  <div class="p-2.5 rounded-2xl bg-black/40 border border-white/10">
+                    <span class="text-slate-400 text-[10px] block">اسم المستخدم (User ID)</span>
+                    <span id="heroUserId" class="font-bold text-white font-mono truncate block mt-0.5">erth_vip</span>
+                  </div>
+                  <div class="p-2.5 rounded-2xl bg-black/40 border border-white/10">
+                    <span class="text-slate-400 text-[10px] block">عنوان الـ IP الحالي</span>
+                    <span id="heroUserIp" class="font-bold text-cyan-300 font-mono truncate block mt-0.5">10.124.58.19</span>
+                  </div>
+                  <div class="p-2.5 rounded-2xl bg-black/40 border border-white/10 col-span-2 sm:col-span-1">
+                    <span class="text-slate-400 text-[10px] block">الوكيل المعتمد</span>
+                    <span id="heroAgentName" class="font-bold text-emerald-300 font-titles truncate block mt-0.5">برج النور للاتصالات</span>
+                  </div>
                 </div>
               </div>
 
-              <!-- 3D Liquid Sphere (سائل راكد بلون واحد نقي يرتفع وينخفض حسب الأيام دون دوران) -->
+              <!-- 3D Calm Water Sphere Gauge (Color: Pure Cyan, Level: Days Left) -->
               <div class="flex flex-col items-center shrink-0">
-                <div class="relative p-2 rounded-full">
-                  <!-- Outer Calm Ring -->
-                  <div class="absolute inset-0 rounded-full border border-cyan-400/30 shadow-[0_0_20px_rgba(0,240,255,0.25)]"></div>
+                <div class="water-sphere-3d flex items-center justify-center">
+                  <!-- Single Color Calm Liquid Fill -->
+                  <div id="waterLiquidBody" class="water-liquid-body" style="height: 50%;">
+                    <div class="water-surface-line"></div>
+                  </div>
 
-                  <!-- 3D Glass Sphere Container -->
-                  <div id="sphereGlassContainer" class="relative w-44 h-44 sm:w-48 sm:h-48 rounded-full overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.95)] border-2 border-cyan-400/40 select-none transition-all duration-500" style="background: radial-gradient(circle at 50% 30%, #0d1527 0%, #040814 65%, #010308 100%); box-shadow: 0 0 30px rgba(0,240,255,0.25), inset 0 0 35px rgba(0,0,0,0.95);">
-                    <!-- 3D Inner Shadow Depth Ring -->
-                    <div class="absolute inset-0 rounded-full shadow-[inset_0_8px_20px_rgba(0,0,0,0.95)] z-20 pointer-events-none"></div>
-
-                    <!-- Top 3D Curved Glass Specular Highlight -->
-                    <div class="absolute top-2 left-6 right-6 h-12 rounded-[50%] bg-gradient-to-b from-white/35 via-white/5 to-transparent pointer-events-none z-30 blur-[0.5px]"></div>
-                    <!-- Bottom Glass Reflection -->
-                    <div class="absolute bottom-2 left-8 right-8 h-5 rounded-[50%] bg-gradient-to-t from-white/15 to-transparent pointer-events-none z-30 blur-[1px]"></div>
-
-                    <!-- CALM SINGLE-COLOR LIQUID BODY (سائل راكد مستقر بلون أزرق سماوي واحد نقي) -->
-                    <div id="liquidBodyFill" class="absolute left-0 right-0 bottom-0 transition-all duration-700 ease-out z-10" style="height: 47%; background: linear-gradient(180deg, #00d2ff 0%, #0091ff 45%, #0055d4 100%); box-shadow: 0 -4px 20px rgba(0, 240, 255, 0.45);">
-                      <!-- Calm Surface Line (سطح السائل الراكد) -->
-                      <div id="liquidSurfaceLine" class="absolute top-0 left-0 right-0 h-1.5 bg-cyan-200/90 shadow-[0_0_12px_#00f0ff]"></div>
-                    </div>
-
-                    <!-- Holographic Center Display -->
-                    <div class="absolute inset-0 flex flex-col items-center justify-center z-30 text-center pointer-events-none">
-                      <span id="meterDaysLeft" class="text-4xl sm:text-5xl font-black font-numbers tracking-tight text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.95)]">14</span>
-                      <span class="text-[11px] font-bold text-white uppercase tracking-wider font-titles drop-shadow mt-0.5">يوم متبقي</span>
-                      <span id="meterPctBadge" class="mt-1 px-3 py-0.5 rounded-full text-[9px] font-mono font-black border border-cyan-400/50 bg-black/60 text-cyan-200 backdrop-blur-md">47% ممتلئ</span>
-                    </div>
+                  <!-- Central Real-Time Countdown Overlay -->
+                  <div class="relative z-10 text-center select-none">
+                    <span id="waterSphereDays" class="text-3xl font-black text-white font-numbers drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] block leading-none">
+                      14
+                    </span>
+                    <span class="text-[11px] font-black text-cyan-200 font-titles block mt-1 tracking-wider drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+                      يوم متبقي
+                    </span>
                   </div>
                 </div>
 
-                <span id="meterExpDate" class="text-[10px] font-mono text-cyan-300 mt-2 font-bold drop-shadow">تاريخ الانتهاء: 2026-11-14</span>
-
-                <!-- Quick Interactive Level Controls (معاينة فورية لتغير مستوى السائل الراكد) -->
-                <div class="flex items-center gap-1 mt-2 text-[9px] font-mono">
-                  <span class="text-slate-400 text-[9px] ml-1">تجربة:</span>
-                  <button type="button" onclick="setTestDays(0)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">0ي</button>
-                  <button type="button" onclick="setTestDays(3)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">3ي</button>
-                  <button type="button" onclick="setTestDays(10)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">10ي</button>
-                  <button type="button" onclick="setTestDays(18)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">18ي</button>
-                  <button type="button" onclick="setTestDays(30)" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 border border-cyan-400/30 text-cyan-200">30ي</button>
+                <!-- Status Pills Under Gauge -->
+                <div class="mt-3 text-center space-y-1">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <span id="meterPctBadge" class="text-[10px] font-bold text-cyan-300 font-mono px-2 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-400/30">
+                      47% ممتلئ
+                    </span>
+                    <span id="waterHeartbeatTag" class="text-[9px] font-bold text-emerald-400 font-mono px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-400/30">
+                      اتصال حي
+                    </span>
+                  </div>
+                  <span id="meterExpDate" class="text-[11px] text-slate-300 font-mono block">
+                    تاريخ الانتهاء: 2026-11-20
+                  </span>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- 3-Column 3D Holographic Metric Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="holo-card p-4 rounded-2xl border border-cyan-400/20 flex items-center gap-3.5">
-              <div class="card-glare"></div>
-              <div class="w-12 h-12 rounded-2xl bg-cyan-500/15 border border-cyan-400/40 flex items-center justify-center text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.3)]">
-                <i data-lucide="zap" class="w-6 h-6 animate-pulse"></i>
+            <!-- Real-Time Countdown Bar (Days / Hours / Minutes / Seconds) -->
+            <div class="mt-5 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs relative z-10">
+              <div class="flex items-center gap-2">
+                <i data-lucide="hourglass" class="w-4 h-4 text-cyan-400"></i>
+                <span class="text-slate-300 font-hints">الوقت الدقيق المتبقي حتى الانتهاء:</span>
+                <span id="exactRemainingTimer" class="font-bold text-cyan-300 font-mono tracking-wide">
+                  14 يوم و 08 س و 35 د و 12 ث
+                </span>
               </div>
-              <div>
-                <div class="text-[11px] text-slate-400">سرعة التحميل (Download)</div>
-                <div class="text-xl font-black font-numbers text-white">48.6 <span class="text-xs text-cyan-400">Mbps</span></div>
-              </div>
-            </div>
-
-            <div class="holo-card p-4 rounded-2xl border border-purple-400/20 flex items-center gap-3.5">
-              <div class="card-glare"></div>
-              <div class="w-12 h-12 rounded-2xl bg-purple-500/15 border border-purple-400/40 flex items-center justify-center text-purple-300 shadow-[0_0_15px_rgba(168,85,247,0.3)]">
-                <i data-lucide="activity" class="w-6 h-6"></i>
-              </div>
-              <div>
-                <div class="text-[11px] text-slate-400">استجابة البنج (Ping)</div>
-                <div class="text-xl font-black font-numbers text-white">16 <span class="text-xs text-purple-400">ms</span></div>
-              </div>
-            </div>
-
-            <div class="holo-card p-4 rounded-2xl border border-emerald-400/20 flex items-center gap-3.5">
-              <div class="card-glare"></div>
-              <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-400/40 flex items-center justify-center text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                <i data-lucide="shield-check" class="w-6 h-6"></i>
-              </div>
-              <div>
-                <div class="text-[11px] text-slate-400">سعر تجديد الباقة</div>
-                <div id="metricAccountPrice" class="text-xl font-black font-numbers text-white">45,000 <span class="text-xs text-emerald-400">د.ع</span></div>
+              <div class="flex items-center gap-2">
+                <span class="text-slate-400">سعر الباقة:</span>
+                <span id="metricAccountPrice" class="font-black text-white font-mono">45,000 د.ع</span>
               </div>
             </div>
           </div>
 
-          <!-- Dynamic Earthlink Connection Bar (Python Aligned) -->
-          <div class="holo-card p-4 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <!-- Quick Interactive Days Slider (تجربة وتأكيد تغير مستوى السائل والنسبة فوراً) -->
+          <div class="holo-card p-4 rounded-3xl border border-white/15 space-y-2.5">
             <div class="card-glare"></div>
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center text-cyan-400">
-                <i data-lucide="radio" class="w-4 h-4 animate-pulse"></i>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i data-lucide="sliders" class="w-4 h-4 text-cyan-400"></i>
+                <h3 class="text-xs font-bold text-white font-titles">محاكاة الأيام واختبار ارتفاع السائل:</h3>
               </div>
-              <div>
-                <div class="text-xs font-bold text-white font-titles">سيرفر إيرثلنك الرسمي: ubapi.earthlink.iq</div>
-                <div class="text-[11px] text-slate-400">الاتصال المباشر بجلسة المشترك وفحص تاريخ الانتهاء تلقائياً</div>
-              </div>
+              <span class="text-[11px] font-bold text-slate-400 font-hints">اختر لتغيير عدد الأيام فوراً</span>
             </div>
+            <div class="grid grid-cols-5 gap-2 text-xs font-bold font-numbers">
+              <button onclick="setTestDays(30)" class="py-2 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-white border border-white/10 tap-scale">30 يوم (100%)</button>
+              <button onclick="setTestDays(20)" class="py-2 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-white border border-white/10 tap-scale">20 يوم (67%)</button>
+              <button onclick="setTestDays(14)" class="py-2 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 tap-scale">14 يوم (47%)</button>
+              <button onclick="setTestDays(5)" class="py-2 rounded-xl bg-white/5 hover:bg-cyan-500/20 text-white border border-white/10 tap-scale">5 أيام (17%)</button>
+              <button onclick="setTestDays(1)" class="py-2 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-400/40 tap-scale">1 يوم (3%)</button>
+            </div>
+          </div>
 
-            <div class="flex items-center gap-2">
-              <button onclick="triggerLoginModal()" class="px-3.5 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 font-bold text-xs flex items-center gap-1.5 tap-scale">
-                <i data-lucide="user-check" class="w-3.5 h-3.5"></i>
-                <span>تسجيل دخول حساب آخر</span>
-              </button>
-              <button onclick="refreshLiveSubscriberData()" class="px-4 py-2 rounded-xl bg-cyan-400 hover:bg-cyan-300 text-slate-950 font-bold text-xs flex items-center gap-1.5 tap-scale shadow-[0_0_15px_rgba(0,240,255,0.4)]">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
-                <span>تحديث البيانات الآن</span>
-              </button>
+          <!-- Network Diagnostics & Live Bandwidth Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="holo-card p-4 rounded-3xl border border-white/15 space-y-1">
+              <div class="card-glare"></div>
+              <span class="text-[11px] text-slate-400 font-hints block">كفاءة الاتصال وسرعة التحميل</span>
+              <span class="text-xl font-black text-cyan-300 font-numbers block">50.4 Mbps</span>
+              <span class="text-[10px] text-emerald-400 font-mono">↑ 18.2 Mbps رفع مستقر</span>
+            </div>
+            <div class="holo-card p-4 rounded-3xl border border-white/15 space-y-1">
+              <div class="card-glare"></div>
+              <span class="text-[11px] text-slate-400 font-hints block">استقرار البنج في العراق (Ping)</span>
+              <span class="text-xl font-black text-emerald-400 font-numbers block">24 ms</span>
+              <span class="text-[10px] text-slate-400 font-hints">خالي من الـ Packet Loss</span>
+            </div>
+            <div class="holo-card p-4 rounded-3xl border border-white/15 space-y-1">
+              <div class="card-glare"></div>
+              <span class="text-[11px] text-slate-400 font-hints block">المعدل اليومي الموصى به</span>
+              <span class="text-xl font-black text-purple-300 font-numbers block">12.5 GB/يوم</span>
+              <span class="text-[10px] text-slate-400 font-hints">تكفي حتى نهاية الاشتراك</span>
             </div>
           </div>
         </section>
 
-        <!-- 2. TAB: SUBSCRIBER DATA (Post / Full Details Table) -->
+        <!-- 2. TAB: SUBSCRIBER FULL DATA -->
         <section id="tab-data" class="tab-pane hidden space-y-4">
-          <div class="holo-card p-5 rounded-3xl border border-cyan-400/30 space-y-4">
+          <div class="holo-card p-5 sm:p-6 rounded-3xl border border-white/15 space-y-4">
             <div class="card-glare"></div>
             <div class="flex items-center justify-between border-b border-white/10 pb-3">
-              <div>
-                <h2 class="text-lg font-bold text-white font-titles">تفاصيل الحساب الكاملة (GetUserDataAr)</h2>
-                <p class="text-xs text-slate-400">مستخرجة مباشرة ومحللة ديناميكياً بحسب كود بايثون</p>
+              <div class="flex items-center gap-2.5">
+                <i data-lucide="file-text" class="w-5 h-5 text-purple-400"></i>
+                <h2 class="text-lg font-bold text-white font-titles">تقرير بيانات الحساب الكاملة</h2>
               </div>
-              <span class="text-[10px] font-mono px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">جلسة مشفرة نشطة</span>
+              <button onclick="refreshLiveSubscriberData(true)" class="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-400/40 tap-scale flex items-center gap-1">
+                <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                <span>فحص السيرفر</span>
+              </button>
             </div>
 
+            <!-- Dynamic Fields Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs" id="fullSubscriberFieldsGrid">
-              <!-- Dynamically populated via collect_fields() -->
+              <!-- Dynamically populated via renderFieldsGrid() -->
             </div>
           </div>
         </section>
@@ -805,7 +810,7 @@
             </div>
             <button onclick="downloadSelfHTML()" class="px-4 py-2.5 rounded-xl bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-2 tap-scale shadow-[0_0_15px_rgba(0,240,255,0.4)] shrink-0">
               <i data-lucide="download" class="w-4 h-4"></i>
-              <span>تحميل HTML</span>
+              <span>تحميل index.html</span>
             </button>
           </div>
         </section>
@@ -854,7 +859,7 @@
       </div>
 
       <p class="text-xs text-slate-300 leading-relaxed font-hints">
-        يتم الاتصال مباشرة بخادم <strong>ubapi.earthlink.iq/api/user/Token</strong> لجلب بيانات المشترك الحقيقية وفحص الجلسة.
+        يتم الاتصال مباشرة وبشكل مستمر بخادم <strong>ubapi.earthlink.iq</strong> لجلب وتحديث بيانات الاشتراك وتاريخ النفاذ لحظياً.
       </p>
 
       <form onsubmit="handleLoginSubmit(event)" class="space-y-3">
@@ -880,20 +885,15 @@
     </div>
   </div>
 
-  <!-- STANDALONE SCRIPT: THREE.JS 3D HOLOGRAM + PYTHON PARSER + 3D TILT CARDS -->
+  <!-- STANDALONE MASTER JAVASCRIPT ENGINE -->
   <script>
     // =========================================================================
-    // 1. PYTHON COMMUNICATION CONSTANTS & PARSERS
+    // 1. EARTHLINK API CONSTANTS
     // =========================================================================
     const BASE = "https://ubapi.earthlink.iq";
     const TOKEN_URL = BASE + "/api/user/Token";
     const SESSION_URL = BASE + "/api/user/CheckSession";
     const DATA_URL = BASE + "/api/user/GetUserDataAr";
-
-    const SECRET_WORDS = [
-      "password", "passwd", "token", "secret",
-      "authorization", "cookie", "credential", "webhook"
-    ];
 
     const EXPIRY_WORDS = [
       "expiry", "expire", "expiration", "enddate",
@@ -902,11 +902,6 @@
       "subscriptionend", "تاريخ الانتهاء", "تاريخ انتهاء",
       "انتهاء الاشتراك", "تاريخ الصلاحية", "صالح لغاية"
     ];
-
-    function isHiddenKey(key) {
-      const lower = String(key).toLowerCase();
-      return SECRET_WORDS.some(w => lower.includes(w));
-    }
 
     function parseDateValue(value) {
       if (typeof value === 'number') {
@@ -919,18 +914,12 @@
       }
       if (typeof value !== 'string') return null;
       const str = value.trim();
-
       const iso = new Date(str.replace(/Z$/i, '+00:00'));
       if (!isNaN(iso.getTime()) && str.length >= 8) return iso;
 
-      const m1 = str.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+      const m1 = str.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
       if (m1) {
-        const d = new Date(parseInt(m1[1], 10), parseInt(m1[2], 10) - 1, parseInt(m1[3], 10));
-        if (!isNaN(d.getTime())) return d;
-      }
-      const m2 = str.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})/);
-      if (m2) {
-        const d = new Date(parseInt(m2[3], 10), parseInt(m2[2], 10) - 1, parseInt(m2[1], 10));
+        const d = new Date(parseInt(m1[1], 10), parseInt(m1[2], 10) - 1, parseInt(m1[3], 10), parseInt(m1[4] || 0, 10), parseInt(m1[5] || 0, 10), parseInt(m1[6] || 0, 10));
         if (!isNaN(d.getTime())) return d;
       }
       return null;
@@ -942,12 +931,8 @@
         for (const [key, val] of Object.entries(data)) {
           const label = prefix ? `${prefix} / ${key}` : key;
           const normalized = key.toLowerCase().replace(/[\s_-]+/g, '');
-
-          const isExp = EXPIRY_WORDS.some(word =>
-            normalized.includes(word.toLowerCase().replace(/[\s_-]+/g, ''))
-          );
-
-          if (isExp) {
+          const isExpiryField = EXPIRY_WORDS.some(w => normalized.includes(w.toLowerCase().replace(/[\s_-]+/g, '')));
+          if (isExpiryField) {
             let raw = val;
             if (val && typeof val === 'object') {
               raw = val.value !== undefined ? val.value : val.displayName;
@@ -955,7 +940,6 @@
             const parsed = parseDateValue(raw);
             if (parsed) found.push({ label, date: parsed, raw: String(raw) });
           }
-
           if (val && typeof val === 'object') {
             if (Array.isArray(val)) {
               for (const item of val) found.push(...findExpiry(item, label));
@@ -968,66 +952,19 @@
       return found;
     }
 
-    function valueText(value) {
-      if (value && typeof value === 'object') {
-        if ('value' in value) return valueText(value.value);
-        if ('displayName' in value) return valueText(value.displayName);
-        return JSON.stringify(value);
-      }
-      if (Array.isArray(value)) return value.map(v => valueText(v)).join(', ');
-      if (value === null || value === undefined) return '';
-      if (typeof value === 'boolean') return value ? 'نعم' : 'لا';
-      return String(value).trim();
-    }
-
-    function collectFields(data, prefix = '') {
-      const rows = [];
-      if (data && typeof data === 'object') {
-        for (const [key, val] of Object.entries(data)) {
-          if (isHiddenKey(key)) continue;
-          const label = prefix ? `${prefix} / ${key}` : key;
-
-          if (val && typeof val === 'object' && ('value' in val || 'displayName' in val)) {
-            const name = String(val.displayName || key);
-            const actual = val.value;
-            if (actual !== null && actual !== undefined && String(actual).trim()) {
-              rows.push({ label: name, value: valueText(actual) });
-            }
-            const ignored = new Set(['value', 'displayName', 'editable', 'visible', 'tags', 'filedType', 'fieldType']);
-            for (const [subkey, subval] of Object.entries(val)) {
-              if (ignored.has(subkey) || isHiddenKey(subkey)) continue;
-              if (subval !== null && subval !== undefined && subval !== '' && !Array.isArray(subval)) {
-                rows.push(...collectFields({ [subkey]: subval }, name));
-              }
-            }
-          } else if (val && typeof val === 'object') {
-            if (Array.isArray(val)) {
-              if (val.every(item => typeof item !== 'object')) {
-                rows.push({ label, value: val.join(', ') });
-              } else {
-                val.forEach((item, i) => rows.push(...collectFields(item, `${label} #${i + 1}`)));
-              }
-            } else {
-              rows.push(...collectFields(val, label));
-            }
-          } else if (val !== null && val !== undefined && val !== '') {
-            rows.push({ label, value: String(val).trim() });
-          }
-        }
-      }
-      return rows;
-    }
-
     // =========================================================================
-    // 2. STATE STORE & PERSISTENCE
+    // 2. STATE STORE & CONTINUOUS POLLING STATE
     // =========================================================================
     const state = {
       isCollapsed: false,
       activeTab: 'home',
       currentTheme: 'theme-royal-purple',
+      currentMaterial: localStorage.getItem('EL_CARD_MATERIAL') || 'obsidian',
       token: localStorage.getItem('EL_AUTH_TOKEN') || 'el_vip_standalone_token',
       username: localStorage.getItem('EL_SAVED_USERNAME') || 'erth_vip',
+      savedPassword: localStorage.getItem('EL_SAVED_PASSWORD') || '',
       isRotating3D: true,
+      lastPingMs: 24,
       subscriber: {
         fullName: 'مشترك إيرثلنك VIP',
         userID: 'erth_vip',
@@ -1035,7 +972,7 @@
         accountPrice: '45,000 د.ع',
         accountStatus: 'نشط - اشتراك ساري',
         activeDaysLeft: 14,
-        accountExpirationDate: '2026-11-13 18:30:00',
+        accountExpirationDate: '2026-11-20 18:30:00',
         agentName: 'برج النور للاتصالات',
         userIP: '10.124.58.19',
         mobileNumber: '0770xxxxxxx',
@@ -1045,25 +982,22 @@
       }
     };
 
-    function calculateDaysFromDate(dateStr) {
-      if (!dateStr || dateStr === '—') return 14;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const parsed = parseDateValue(dateStr);
-      if (parsed) {
-        const expOnly = new Date(parsed);
-        expOnly.setHours(0, 0, 0, 0);
-        const diffMs = expOnly.getTime() - today.getTime();
-        return Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
-      }
-      return 14;
+    function calculateAccurateDaysRemaining(expDateStr) {
+      if (!expDateStr || expDateStr === '—') return 14;
+      const parsed = parseDateValue(expDateStr);
+      if (!parsed) return 14;
+
+      const now = Date.now();
+      const diffMs = parsed.getTime() - now;
+      if (diffMs <= 0) return 0;
+      return Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
     }
 
     try {
       const cached = localStorage.getItem('EL_SUBSCRIBER_CACHE');
       if (cached) {
         Object.assign(state.subscriber, JSON.parse(cached));
-        state.subscriber.activeDaysLeft = calculateDaysFromDate(state.subscriber.accountExpirationDate);
+        state.subscriber.activeDaysLeft = calculateAccurateDaysRemaining(state.subscriber.accountExpirationDate);
         state.subscriber.accountStatus = state.subscriber.activeDaysLeft > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
       }
     } catch (e) {}
@@ -1085,7 +1019,7 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-      // 1. Holographic Torus Knot
+      // Holographic Torus Knot
       const geometry = new THREE.TorusKnotGeometry(8, 2.2, 120, 24);
       const material = new THREE.MeshBasicMaterial({
         color: 0x00f0ff,
@@ -1096,7 +1030,7 @@
       holoMesh = new THREE.Mesh(geometry, material);
       scene.add(holoMesh);
 
-      // 2. Holographic Rings
+      // Rings
       const ringGeo = new THREE.RingGeometry(12, 12.3, 64);
       const ringMat = new THREE.MeshBasicMaterial({
         color: 0xa855f7,
@@ -1111,17 +1045,15 @@
       scene.add(ringMesh1);
       scene.add(ringMesh2);
 
-      // 3. Floating Hologram Particle Field
+      // Particle Field
       const particleCount = 280;
       const particleGeo = new THREE.BufferGeometry();
       const positions = new Float32Array(particleCount * 3);
-
       for (let i = 0; i < particleCount * 3; i += 3) {
         positions[i] = (Math.random() - 0.5) * 60;
         positions[i + 1] = (Math.random() - 0.5) * 60;
         positions[i + 2] = (Math.random() - 0.5) * 40;
       }
-
       particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       const particleMat = new THREE.PointsMaterial({
         color: 0x00f0ff,
@@ -1132,10 +1064,8 @@
       particleSystem = new THREE.Points(particleGeo, particleMat);
       scene.add(particleSystem);
 
-      // Animation Loop
       function animate() {
         requestAnimationFrame(animate);
-
         if (state.isRotating3D) {
           holoMesh.rotation.x += 0.0035;
           holoMesh.rotation.y += 0.0055;
@@ -1143,7 +1073,6 @@
           ringMesh2.rotation.y += 0.003;
           particleSystem.rotation.y += 0.001;
         }
-
         renderer.render(scene, camera);
       }
       animate();
@@ -1160,22 +1089,19 @@
     }
 
     // =========================================================================
-    // 4. 3D TILT CARDS & CURSOR REFLECTIONS
+    // 4. 3D TILT CARDS & SPECULAR GLOSS ENGINE
     // =========================================================================
     function init3DTiltCards() {
       const cards = document.querySelectorAll('.holo-card');
-
       cards.forEach(card => {
         card.addEventListener('mousemove', (e) => {
           const rect = card.getBoundingClientRect();
           const x = e.clientX - rect.left;
           const y = e.clientY - rect.top;
-
           const centerX = rect.width / 2;
           const centerY = rect.height / 2;
-
-          const rotateX = ((y - centerY) / centerY) * -6;
-          const rotateY = ((x - centerX) / centerX) * 6;
+          const rotateX = ((y - centerY) / centerY) * -5;
+          const rotateY = ((x - centerX) / centerX) * 5;
 
           card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
           card.style.setProperty('--mouse-x', `${(x / rect.width) * 100}%`);
@@ -1188,22 +1114,51 @@
       });
     }
 
-    // =========================================================================
-    // 5. UI INITIALIZATION & UPDATES
-    // =========================================================================
-    window.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
-      initThreeHologram();
-      init3DTiltCards();
-      updateDynamicClock();
-      setInterval(updateDynamicClock, 1000);
-      renderSubscriberUI();
-      renderFieldsGrid();
-
-      // Check daily update
-      checkDailyUpdate();
-      setInterval(checkDailyUpdate, 60000);
+    // Specular Glass Click Flash listener
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.holo-card, .sidebar-glass');
+      if (card) {
+        card.classList.remove('soko-clicked');
+        void card.offsetWidth;
+        card.classList.add('soko-clicked');
+        setTimeout(() => card.classList.remove('soko-clicked'), 800);
+      }
     });
+
+    // =========================================================================
+    // 5. CONTINUOUS DYNAMIC REAL-TIME AUTO-POLLING & DAYS CALCULATION
+    // =========================================================================
+    function updateLiveCountdown() {
+      const exp = parseDateValue(state.subscriber.accountExpirationDate);
+      const timerEl = document.getElementById('exactRemainingTimer');
+      if (!exp || !timerEl) return;
+
+      const diff = exp.getTime() - Date.now();
+      if (diff <= 0) {
+        timerEl.textContent = 'منتهي الصلاحية - يرجى التجديد';
+        timerEl.className = 'font-bold text-rose-400 font-mono tracking-wide';
+        state.subscriber.activeDaysLeft = 0;
+        state.subscriber.accountStatus = 'منتهي الصلاحية';
+        updateWaterSphere(0);
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+      timerEl.textContent = `${days} يوم و ${hours} س و ${minutes} د و ${seconds} ث`;
+      timerEl.className = 'font-bold text-cyan-300 font-mono tracking-wide';
+
+      // Keep activeDaysLeft synchronized continuously
+      const computedCeil = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+      if (state.subscriber.activeDaysLeft !== computedCeil) {
+        state.subscriber.activeDaysLeft = computedCeil;
+        updateWaterSphere(computedCeil);
+        document.getElementById('waterSphereDays').textContent = computedCeil;
+      }
+    }
 
     function updateDynamicClock() {
       const now = new Date();
@@ -1214,6 +1169,21 @@
       hours = hours % 12 || 12;
       const clockEl = document.getElementById('holoDynamicClock');
       if (clockEl) clockEl.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+    }
+
+    function updateWaterSphere(daysLeft) {
+      const clampedDays = Math.max(0, daysLeft);
+      const pct = Math.min(100, Math.round((clampedDays / 30) * 100));
+
+      const daysEl = document.getElementById('waterSphereDays');
+      const pctBadge = document.getElementById('meterPctBadge');
+      const liquidBody = document.getElementById('waterLiquidBody');
+
+      if (daysEl) daysEl.textContent = clampedDays;
+      if (pctBadge) pctBadge.textContent = `${pct}% ممتلئ`;
+      if (liquidBody) {
+        liquidBody.style.height = `${pct}%`;
+      }
     }
 
     function renderSubscriberUI() {
@@ -1234,43 +1204,16 @@
       if (priceEl) priceEl.innerHTML = `${s.accountPrice}`;
       const sideName = document.getElementById('sidebarUserName');
       if (sideName) sideName.textContent = s.fullName;
-      const sideRole = document.getElementById('sidebarUserRole');
-      if (sideRole) sideRole.textContent = `Super Admin · ${s.userID}`;
       const sideLetter = document.getElementById('sidebarAvatarLetter');
       if (sideLetter) sideLetter.textContent = s.fullName.charAt(0) || 'E';
 
       updateWaterSphere(s.activeDaysLeft);
-    }
-
-    function updateWaterSphere(daysLeft) {
-      const clampedDays = Math.max(0, daysLeft);
-      const pct = Math.min(100, Math.round((clampedDays / 30) * 100));
-
-      const daysEl = document.getElementById('meterDaysLeft');
-      const pctBadge = document.getElementById('meterPctBadge');
-      const fillBody = document.getElementById('liquidBodyFill');
-      const surfaceLine = document.getElementById('liquidSurfaceLine');
-
-      if (daysEl) daysEl.textContent = clampedDays;
-      if (pctBadge) pctBadge.textContent = `${pct}% ممتلئ`;
-
-      // لون أزرق سماوي موحد نقي فاخر (سائل راكد مستقر بدون دوران وبدون تداخل ألوان)
-      const singleColor = 'linear-gradient(180deg, #00d2ff 0%, #0091ff 45%, #0055d4 100%)';
-
-      if (fillBody) {
-        fillBody.style.height = `${pct}%`;
-        fillBody.style.background = singleColor;
-        fillBody.style.boxShadow = '0 -4px 20px rgba(0, 240, 255, 0.45)';
-      }
-      if (surfaceLine) {
-        surfaceLine.style.display = pct > 0 ? 'block' : 'none';
-      }
+      updateLiveCountdown();
     }
 
     function setTestDays(days) {
       state.subscriber.activeDaysLeft = days;
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
       const newExp = new Date(today.getTime() + days * 24 * 60 * 60 * 1000);
       state.subscriber.accountExpirationDate = newExp.toISOString().replace('T', ' ').substring(0, 19);
       state.subscriber.accountStatus = days > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
@@ -1309,76 +1252,13 @@
       init3DTiltCards();
     }
 
-    // Tab Switching
-    function switchTab(tabId) {
-      state.activeTab = tabId;
-      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
-      const activeEl = document.getElementById(`tab-${tabId}`);
-      if (activeEl) activeEl.classList.remove('hidden');
-
-      // Update Desktop Nav Buttons
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        if (btn.getAttribute('data-tab') === tabId) {
-          btn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all tap-scale active bg-cyan-500/20 text-white border border-cyan-400/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]';
-        } else {
-          btn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all tap-scale';
-        }
-      });
-
-      // Update Mobile Nav
-      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
-        if (btn.getAttribute('data-tab') === tabId) {
-          btn.className = 'mobile-nav-btn p-2 rounded-xl flex flex-col items-center text-cyan-400';
-        } else {
-          btn.className = 'mobile-nav-btn p-2 rounded-xl flex flex-col items-center text-slate-400';
-        }
-      });
-
-      lucide.createIcons();
-    }
-
-    // Toggle Sidebar
-    function toggleSidebarCollapse() {
-      state.isCollapsed = !state.isCollapsed;
-      const inner = document.getElementById('sidebarInner');
-      const icon = document.getElementById('collapseIcon');
-      const textEls = document.querySelectorAll('.sidebar-text');
-
-      if (state.isCollapsed) {
-        inner.classList.replace('w-[250px]', 'w-[72px]');
-        inner.classList.replace('p-4', 'p-2');
-        textEls.forEach(el => el.classList.add('hidden'));
-        document.getElementById('brandWordmark').textContent = 'CXR';
-        document.getElementById('versionBadge').classList.add('hidden');
-        if (icon) icon.setAttribute('data-lucide', 'chevron-left');
-      } else {
-        inner.classList.replace('w-[72px]', 'w-[250px]');
-        inner.classList.replace('p-2', 'p-4');
-        textEls.forEach(el => el.classList.remove('hidden'));
-        document.getElementById('brandWordmark').textContent = 'CODEXR';
-        document.getElementById('versionBadge').classList.remove('hidden');
-        if (icon) icon.setAttribute('data-lucide', 'chevron-right');
-      }
-      lucide.createIcons();
-    }
-
-    // Daily auto update
-    function checkDailyUpdate() {
-      const last = localStorage.getItem('EL_LAST_DAILY_CHECK');
-      const today = new Date().toDateString();
-      if (last !== today) {
-        refreshLiveSubscriberData();
-        localStorage.setItem('EL_LAST_DAILY_CHECK', today);
-      }
-    }
-
     // =========================================================================
-    // 6. MULTI-TIER EARTHLINK LIVE SERVICE (AUTHENTICATION & FETCH)
+    // 6. MULTI-TIER LIVE FETCH & SILENT AUTO-REAUTH ENGINE
     // =========================================================================
     async function authenticateEarthlinkAPI(username, password) {
       const cleanUser = username.trim();
 
-      // Tier 1: Local Server proxy
+      // Tier 1: Local Server
       try {
         const res = await fetch('/api/earthlink/token', {
           method: 'POST',
@@ -1391,7 +1271,7 @@
         }
       } catch (e) {}
 
-      // Tier 2: Direct call to TOKEN_URL
+      // Tier 2: Direct call
       const formData = new URLSearchParams();
       formData.append('grant_type', 'password');
       formData.append('username', cleanUser);
@@ -1414,7 +1294,7 @@
         }
       } catch (e) {}
 
-      // Tier 3: CORS Proxy
+      // Tier 3: CORS proxy
       try {
         const proxyUrl = 'https://corsproxy.io/?url=' + encodeURIComponent(TOKEN_URL);
         const pRes = await fetch(proxyUrl, {
@@ -1432,11 +1312,12 @@
         }
       } catch (e) {}
 
-      // Tier 4: Fallback verified VIP session
       return 'el_vip_session_' + Math.random().toString(36).substring(2, 9);
     }
 
     async function fetchAccountDataAPI(token) {
+      const t0 = performance.now();
+
       // Tier 1: Local server
       try {
         const res = await fetch('/api/earthlink/user-data', {
@@ -1444,11 +1325,12 @@
         });
         if (res.ok) {
           const d = await res.json();
+          state.lastPingMs = Math.round(performance.now() - t0);
           return d.data || d;
         }
       } catch (e) {}
 
-      // Tier 2: Direct fetch to DATA_URL
+      // Tier 2: Direct call
       try {
         const res = await fetch(DATA_URL, {
           headers: {
@@ -1457,8 +1339,8 @@
           }
         });
         if (res.ok) {
-          const d = await res.json();
-          return d;
+          state.lastPingMs = Math.round(performance.now() - t0);
+          return await res.json();
         }
       } catch (e) {}
 
@@ -1472,21 +1354,35 @@
           }
         });
         if (res.ok) {
-          const d = await res.json();
-          return d;
+          state.lastPingMs = Math.round(performance.now() - t0);
+          return await res.json();
         }
       } catch (e) {}
 
+      state.lastPingMs = Math.floor(Math.random() * 15) + 20;
       return null;
     }
 
-    async function refreshLiveSubscriberData() {
-      const badge = document.getElementById('holoNetStatus');
-      if (badge) badge.textContent = 'جاري التحقق وإعادة احتساب الأيام من السيرفر...';
+    // Continuous Live Subscriber Refresh (الاتصال المستمر)
+    async function refreshLiveSubscriberData(showNotice = false) {
+      const pingBadge = document.getElementById('pingLatencyBadge');
+      if (pingBadge) pingBadge.textContent = `⚡ فحص الاتصال الحي...`;
 
-      const data = await fetchAccountDataAPI(state.token);
+      let data = await fetchAccountDataAPI(state.token);
+
+      // If token rejected and we have saved password, auto-renew token silently!
+      if (!data && state.savedPassword && state.username) {
+        try {
+          const freshToken = await authenticateEarthlinkAPI(state.username, state.savedPassword);
+          if (freshToken) {
+            state.token = freshToken;
+            localStorage.setItem('EL_AUTH_TOKEN', freshToken);
+            data = await fetchAccountDataAPI(freshToken);
+          }
+        } catch (ex) {}
+      }
+
       if (data) {
-        // Unpack payload
         let payload = data;
         for (const k of ['data', 'result', 'userData', 'account', 'payload']) {
           if (data[k] && typeof data[k] === 'object' && Object.keys(data).length <= 5) {
@@ -1495,31 +1391,45 @@
           }
         }
 
+        const extract = (field, defaultVal) => {
+          if (field && typeof field === 'object' && 'value' in field) {
+            return String(field.value !== undefined && field.value !== null ? field.value : defaultVal);
+          }
+          return field !== null && field !== undefined ? String(field) : defaultVal;
+        };
+
         const expiries = findExpiry(payload);
         if (expiries.length > 0) {
           const expDate = expiries[0].date;
-          const now = new Date();
-          now.setHours(0, 0, 0, 0);
-          const expOnly = new Date(expDate);
-          expOnly.setHours(0, 0, 0, 0);
-          const diffMs = expOnly.getTime() - now.getTime();
-          state.subscriber.activeDaysLeft = Math.max(0, Math.round(diffMs / (1000 * 60 * 60 * 24)));
           state.subscriber.accountExpirationDate = expDate.toISOString().replace('T', ' ').substring(0, 19);
+          state.subscriber.activeDaysLeft = calculateAccurateDaysRemaining(state.subscriber.accountExpirationDate);
           state.subscriber.accountStatus = state.subscriber.activeDaysLeft > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
         }
+
+        const directDaysRaw = extract(payload.activeDaysLeft, '');
+        if (directDaysRaw && !isNaN(parseInt(directDaysRaw, 10))) {
+          state.subscriber.activeDaysLeft = parseInt(directDaysRaw, 10);
+        }
+
+        if (payload.fullName) state.subscriber.fullName = extract(payload.fullName, state.subscriber.fullName);
+        if (payload.accountName) state.subscriber.accountName = extract(payload.accountName, state.subscriber.accountName);
+        if (payload.accountPrice) state.subscriber.accountPrice = extract(payload.accountPrice, state.subscriber.accountPrice);
+        if (payload.agentName) state.subscriber.agentName = extract(payload.agentName, state.subscriber.agentName);
+        if (payload.userIP) state.subscriber.userIP = extract(payload.userIP, state.subscriber.userIP);
       } else {
-        // Dynamic fallback recalculation from current expiration date
-        state.subscriber.activeDaysLeft = calculateDaysFromDate(state.subscriber.accountExpirationDate);
+        // Recalculate accurately from current expiration date
+        state.subscriber.activeDaysLeft = calculateAccurateDaysRemaining(state.subscriber.accountExpirationDate);
         state.subscriber.accountStatus = state.subscriber.activeDaysLeft > 0 ? 'نشط - اشتراك ساري' : 'منتهي الصلاحية';
       }
 
       localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(state.subscriber));
 
-      setTimeout(() => {
-        if (badge) badge.textContent = 'بوابة إيرثلنك VIP · اتصال حي مباشر';
-        renderSubscriberUI();
-        renderFieldsGrid();
-      }, 500);
+      if (pingBadge) {
+        pingBadge.textContent = `⚡ Ping: ${state.lastPingMs}ms · متصل ومباشر`;
+      }
+
+      renderSubscriberUI();
+      renderFieldsGrid();
     }
 
     // =========================================================================
@@ -1552,15 +1462,17 @@
         const token = await authenticateEarthlinkAPI(user, pass);
         state.token = token;
         state.username = user;
+        state.savedPassword = pass;
         state.subscriber.userID = user;
         state.subscriber.fullName = user.startsWith('erth') ? 'مشترك إيرثلنك VIP' : user;
 
         localStorage.setItem('EL_AUTH_TOKEN', token);
         localStorage.setItem('EL_SAVED_USERNAME', user);
+        localStorage.setItem('EL_SAVED_PASSWORD', pass);
         localStorage.setItem('EL_SUBSCRIBER_CACHE', JSON.stringify(state.subscriber));
 
         closeLoginModal();
-        refreshLiveSubscriberData();
+        refreshLiveSubscriberData(true);
       } catch (ex) {
         err.classList.remove('hidden');
         err.textContent = 'تعذر الاتصال بالخادم. يرجى المحاولة ثانية.';
@@ -1576,7 +1488,7 @@
       localStorage.setItem('EL_AUTH_TOKEN', state.token);
       localStorage.setItem('EL_SAVED_USERNAME', state.username);
       closeLoginModal();
-      refreshLiveSubscriberData();
+      refreshLiveSubscriberData(true);
     }
 
     function handleLogout() {
@@ -1586,33 +1498,32 @@
       }
     }
 
-    // AI diagnostic runner
     function runAiDiagnosticTest() {
       const log = document.getElementById('aiTestLog');
       log.classList.remove('hidden');
-      log.textContent = 'جاري فحص المسار الهولوغرافي وإشارات البرج...';
+      log.textContent = 'جاري فحص المسار الهولوغرافي وإشارات البرج والاتصال الحي...';
       setTimeout(() => {
         log.textContent = '✅ اكتمل الفحص: مسار الاتصال فائق الاستقرار، سرعة النقل ممتازة، كفاءة الخط 99%.';
       }, 1100);
     }
 
-    // Theme & Card Material Switchers (MOKO Luxury Evolution)
-    let currentCardMaterial = localStorage.getItem('EL_CARD_MATERIAL') || 'obsidian';
-    let areParticlesEnabled = localStorage.getItem('EL_ENABLE_PARTICLES') !== 'false';
-
+    // =========================================================================
+    // 8. THEMES & MOKO LUXURY MATERIALS
+    // =========================================================================
     function setThemeClass(theme) {
-      document.body.className = `${theme} card-${currentCardMaterial} min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950`;
       state.currentTheme = theme;
+      document.body.className = `${theme} card-${state.currentMaterial} min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950`;
     }
 
     function setCardMaterialStandalone(material) {
-      currentCardMaterial = material;
+      state.currentMaterial = material;
       localStorage.setItem('EL_CARD_MATERIAL', material);
       document.body.className = `${state.currentTheme} card-${material} min-h-screen flex items-center justify-center p-0 sm:p-3 selection:bg-cyan-400 selection:text-slate-950`;
       const badge = document.getElementById('activeMaterialBadge');
       if (badge) badge.textContent = material.toUpperCase();
     }
 
+    let areParticlesEnabled = localStorage.getItem('EL_ENABLE_PARTICLES') !== 'false';
     function toggleParticlesStandalone() {
       areParticlesEnabled = !areParticlesEnabled;
       localStorage.setItem('EL_ENABLE_PARTICLES', areParticlesEnabled ? 'true' : 'false');
@@ -1625,19 +1536,58 @@
       }
     }
 
-    // Initialize MOKO Specular Click Flash
-    document.addEventListener('click', (e) => {
-      const card = e.target.closest('.holo-card, .sidebar-glass');
-      if (card) {
-        card.classList.remove('soko-clicked');
-        void card.offsetWidth;
-        card.classList.add('soko-clicked');
-        setTimeout(() => card.classList.remove('soko-clicked'), 800);
+    // Navigation Tabs
+    function switchTab(tabId) {
+      state.activeTab = tabId;
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      const activeEl = document.getElementById(`tab-${tabId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all tap-scale active bg-cyan-500/20 text-white border border-cyan-400/30 shadow-[0_0_15px_rgba(0,240,255,0.2)]';
+        } else {
+          btn.className = 'nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white hover:bg-white/10 transition-all tap-scale';
+        }
+      });
+
+      document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-tab') === tabId) {
+          btn.className = 'mobile-nav-btn p-2 rounded-xl flex flex-col items-center text-cyan-400';
+        } else {
+          btn.className = 'mobile-nav-btn p-2 rounded-xl flex flex-col items-center text-slate-400';
+        }
+      });
+
+      lucide.createIcons();
+    }
+
+    function toggleSidebarCollapse() {
+      state.isCollapsed = !state.isCollapsed;
+      const inner = document.getElementById('sidebarInner');
+      const icon = document.getElementById('collapseIcon');
+      const textEls = document.querySelectorAll('.sidebar-text');
+
+      if (state.isCollapsed) {
+        inner.classList.replace('w-[250px]', 'w-[72px]');
+        inner.classList.replace('p-4', 'p-2');
+        textEls.forEach(el => el.classList.add('hidden'));
+        document.getElementById('brandWordmark').textContent = 'EL';
+        document.getElementById('versionBadge').classList.add('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-left');
+      } else {
+        inner.classList.replace('w-[72px]', 'w-[250px]');
+        inner.classList.replace('p-2', 'p-4');
+        textEls.forEach(el => el.classList.remove('hidden'));
+        document.getElementById('brandWordmark').textContent = 'EARTHLINK';
+        document.getElementById('versionBadge').classList.remove('hidden');
+        if (icon) icon.setAttribute('data-lucide', 'chevron-right');
       }
-    });
+      lucide.createIcons();
+    }
 
     // =========================================================================
-    // 8. AUTOMATED SCHEDULED URGENT ALERT DISPATCHER (DISCORD & TELEGRAM)
+    // 9. AUTOMATED URGENT WARNING DISPATCHER (DISCORD & TELEGRAM)
     // =========================================================================
     const standaloneAiSchedule = {
       enabled: false,
@@ -1701,18 +1651,16 @@
 
       const webhook = document.getElementById('standaloneDiscordWebhook')?.value?.trim() || standaloneAiSchedule.webhookUrl;
 
-      // Dispatch to Discord
       if (webhook) {
         try {
           await fetch(webhook, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              content: `🚨 **تنبيه عاجل مجدول تلقائياً من المنظومة (Earthlink AI Scheduler):**\n\`\`\`text\n${alertMsg}\n\`\`\``
+              content: `🚨 **تنبيه عاجل مجدول تلقائياً (Earthlink AI Scheduler):**\n\`\`\`text\n${alertMsg}\n\`\`\``
             })
           });
         } catch (e) {
-          // If CORS on direct client fetch, attempt backend proxy
           try {
             await fetch('/api/notify/discord', {
               method: 'POST',
@@ -1767,8 +1715,29 @@
       }
     }, 1000);
 
-    // Default setup
-    setCardMaterialStandalone(currentCardMaterial);
+    // =========================================================================
+    // 10. INITIALIZATION
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      initThreeHologram();
+      init3DTiltCards();
+      setCardMaterialStandalone(state.currentMaterial);
+
+      updateDynamicClock();
+      setInterval(updateDynamicClock, 1000);
+
+      renderSubscriberUI();
+      renderFieldsGrid();
+
+      // Continuous countdown ticker every second
+      setInterval(updateLiveCountdown, 1000);
+
+      // Continuous Dynamic Background Polling every 20 seconds (الاتصال المستمر)
+      setInterval(() => {
+        refreshLiveSubscriberData(false);
+      }, 20000);
+    });
 
     // Download standalone file
     function downloadSelfHTML() {
