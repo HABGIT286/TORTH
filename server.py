@@ -1,541 +1,320 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""EARTHLINK PRO backend - standard library only.
+Serves index.html and proxies authenticated requests to the official Earthlink API.
+No credentials or access tokens are written to disk.
+"""
+
+from __future__ import annotations
+
+import json
 import os
 import secrets
-import logging
-from datetime import datetime, timezone
-from threading import RLock
+import threading
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Any
 
-import requests
-from flask import Flask, request, jsonify, make_response, send_from_directory
-
-# =========================================================
-# EARTHLINK PRO - SECURE API BACKEND
-# =========================================================
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-app = Flask(__name__, static_folder=None)
-app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
-
-logging.basicConfig(
-    level=os.environ.get("LOG_LEVEL", "INFO"),
-    format="%(asctime)s %(levelname)s %(message)s"
-)
+ROOT = Path(__file__).resolve().parent
+HOST = os.environ.get("HOST", "0.0.0.0")
+PORT = int(os.environ.get("PORT", "8080"))
+SESSION_COOKIE = "earthlink_pro_session"
+SESSION_TTL = 12 * 60 * 60
+REQUEST_TIMEOUT = 25
 
 EARTHLINK_BASE = "https://ubapi.earthlink.iq"
-
 TOKEN_URL = EARTHLINK_BASE + "/api/user/Token"
 CHECK_SESSION_URL = EARTHLINK_BASE + "/api/user/CheckSession"
 USER_DATA_URL = EARTHLINK_BASE + "/api/user/GetUserDataAr"
 
-EARTHLINK_ORIGIN = "https://user.earthlink.iq"
+EARTHLINK_HEADERS = {
+    "Accept": "application/json, text/plain, */*",
+    "Origin": "https://user.earthlink.iq",
+    "Referer": "https://user.earthlink.iq/",
+    "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+}
 
-REQUEST_TIMEOUT = 25
-
-COOKIE_NAME = "earthlink_pro_sid"
-
-COOKIE_SECURE = os.environ.get(
-    "COOKIE_SECURE", "false"
-).lower() == "true"
-
-# جلسات المستخدمين والـTokens تبقى في ذاكرة الخادم.
-# عند إعادة تشغيل Python تنتهي الجلسات ويجب تسجيل الدخول مجدداً.
-SESSIONS = {}
-SESSIONS_LOCK = RLock()
+_sessions: dict[str, dict[str, Any]] = {}
+_sessions_lock = threading.RLock()
 
 
-def earthlink_headers(token=None):
-    headers = {
-        "Accept": "application/json, text/plain, */*",
-        "Origin": EARTHLINK_ORIGIN,
-        "Referer": EARTHLINK_ORIGIN + "/",
-        "User-Agent": (
-            "Mozilla/5.0 (Linux; Android 15) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/130.0.0.0 Mobile Safari/537.36"
-        )
-    }
-
-    if token:
-        headers["Authorization"] = "Bearer " + token
-
-    return headers
+class EarthlinkError(Exception):
+    pass
 
 
-def get_session_id():
-    sid = request.cookies.get(COOKIE_NAME)
-
-    if not sid:
-        return None
-
-    if len(sid) < 40 or len(sid) > 150:
-        return None
-
-    return sid
-
-
-def get_session():
-    sid = get_session_id()
-
-    if not sid:
-        return None
-
-    with SESSIONS_LOCK:
-        return SESSIONS.get(sid)
-
-
-def create_session(token, username):
-    sid = secrets.token_urlsafe(48)
-
-    with SESSIONS_LOCK:
-        SESSIONS[sid] = {
-            "token": token,
-            "username": username,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "last_seen": datetime.now(timezone.utc).isoformat()
-        }
-
-    return sid
-
-
-def remove_session(sid):
-    if not sid:
-        return
-
-    with SESSIONS_LOCK:
-        SESSIONS.pop(sid, None)
-
-
-def json_response(data, status=200):
-    response = make_response(jsonify(data), status)
-    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    return response
-
-
-def parse_upstream_response(response):
+def _decode_json(raw: bytes, status: int) -> Any:
     try:
-        return response.json()
-    except ValueError:
-        return {
-            "message": response.text[:1000]
-        }
+        return json.loads(raw.decode("utf-8-sig"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        preview = raw.decode("utf-8", "replace")[:250]
+        raise EarthlinkError(f"استجابة Earthlink ليست JSON (HTTP {status}): {preview}")
 
 
-def extract_token(payload):
+def _request(url: str, *, method: str = "GET", headers: dict[str, str] | None = None,
+             body: bytes | None = None) -> tuple[int, Any]:
+    merged = dict(EARTHLINK_HEADERS)
+    if headers:
+        merged.update(headers)
+    req = urllib.request.Request(url, data=body, headers=merged, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT) as response:
+            raw = response.read()
+            status = response.status
+    except urllib.error.HTTPError as exc:
+        raw = exc.read()
+        status = exc.code
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        raise EarthlinkError(f"تعذر الاتصال بخوادم Earthlink: {exc}") from exc
+
+    try:
+        data = _decode_json(raw, status)
+    except EarthlinkError:
+        if status >= 400:
+            raise EarthlinkError(f"رفض Earthlink الطلب (HTTP {status}).")
+        raise
+    if status < 200 or status >= 300:
+        detail = ""
+        if isinstance(data, dict):
+            detail = str(data.get("error_description") or data.get("message") or data.get("error") or "")
+        raise EarthlinkError(f"فشل طلب Earthlink (HTTP {status}): {detail or 'رفض الخادم الطلب'}")
+    return status, data
+
+
+def _find_token(payload: Any) -> str | None:
     if not isinstance(payload, dict):
         return None
-
-    candidates = [
-        payload,
-        payload.get("data"),
-        payload.get("result"),
-        payload.get("token")
-    ]
-
-    for item in candidates:
-        if not isinstance(item, dict):
-            continue
-
-        token = (
-            item.get("access_token")
-            or item.get("accessToken")
-            or item.get("token")
-        )
-
-        if token and isinstance(token, str):
-            return token
-
+    for key in ("access_token", "accessToken", "token"):
+        value = payload.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    for key in ("data", "result", "payload"):
+        found = _find_token(payload.get(key))
+        if found:
+            return found
     return None
 
 
-def extract_error(payload, default):
-    if isinstance(payload, dict):
-        return (
-            payload.get("error_description")
-            or payload.get("message")
-            or payload.get("error")
-            or default
-        )
-
-    return default
-
-
-def call_earthlink_login(username, password):
-    """
-    يرسل بيانات الدخول إلى Token endpoint.
-    لا يتم تخزين كلمة المرور في الجلسة.
-    """
-
-    form_data = {
-        "grant_type": "password",
-        "username": username,
-        "password": password,
-        "Logintype": "0"
-    }
-
-    response = requests.post(
-        TOKEN_URL,
-        data=form_data,
-        headers={
-            **earthlink_headers(),
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
-        timeout=REQUEST_TIMEOUT
-    )
-
-    payload = parse_upstream_response(response)
-
-    if not response.ok:
-        message = extract_error(
-            payload,
-            "رفض خادم Earthlink تسجيل الدخول."
-        )
-
-        raise ValueError(
-            "Earthlink login failed: " + str(message)
-        )
-
-    token = extract_token(payload)
-
-    if not token:
-        raise ValueError(
-            "لم يعثر الخادم على access_token في استجابة Earthlink."
-        )
-
-    return token
-
-
-def check_earthlink_session(token):
-    """
-    التحقق من صلاحية جلسة Earthlink.
-    """
-
-    response = requests.post(
-        CHECK_SESSION_URL,
-        json={},
-        headers=earthlink_headers(token),
-        timeout=REQUEST_TIMEOUT
-    )
-
-    payload = parse_upstream_response(response)
-
-    if response.status_code in (401, 403):
-        return False, payload
-
-    if not response.ok:
-        return False, payload
-
-    if isinstance(payload, dict):
-        if payload.get("authenticated") is False:
-            return False, payload
-
-        if payload.get("isValid") is False:
-            return False, payload
-
-        if payload.get("valid") is False:
-            return False, payload
-
-    return True, payload
-
-
-def get_earthlink_user_data(token):
-    """
-    جلب بيانات المشترك الفعلية.
-    """
-
-    response = requests.get(
-        USER_DATA_URL,
-        headers=earthlink_headers(token),
-        timeout=REQUEST_TIMEOUT
-    )
-
-    payload = parse_upstream_response(response)
-
-    if response.status_code in (401, 403):
-        raise PermissionError(
-            "انتهت صلاحية جلسة Earthlink. سجّل الدخول مجدداً."
-        )
-
-    if not response.ok:
-        message = extract_error(
-            payload,
-            "تعذر جلب بيانات المشترك."
-        )
-
-        raise RuntimeError(str(message))
-
-    return payload
-
-
-def find_user_object(payload):
-    """
-    يحافظ على البيانات كما وصلت من API،
-    ويحاول العثور على كائن الحساب داخل الاستجابة.
-    """
-
+def _unwrap_account(payload: Any) -> dict[str, Any]:
     current = payload
-
     for _ in range(6):
         if not isinstance(current, dict):
             break
-
-        next_value = (
-            current.get("data")
-            or current.get("result")
-            or current.get("userData")
-            or current.get("account")
-            or current.get("payload")
-        )
-
-        if not isinstance(next_value, dict):
+        next_value = None
+        for key in ("data", "result", "userData", "account", "payload"):
+            candidate = current.get(key)
+            if isinstance(candidate, dict):
+                next_value = candidate
+                break
+        if next_value is None:
             break
-
         current = next_value
-
-    return current if isinstance(current, dict) else {}
-
-
-# =========================================================
-# ROUTES
-# =========================================================
-
-@app.get("/")
-def index():
-    return send_from_directory(BASE_DIR, "index.html")
+    if not isinstance(current, dict):
+        raise EarthlinkError("صيغة بيانات الحساب المستلمة من Earthlink غير متوقعة.")
+    return current
 
 
-@app.get("/health")
-def health():
-    return json_response({
-        "status": "ok",
-        "service": "EARTHLINK PRO",
-        "time": datetime.now(timezone.utc).isoformat()
-    })
-
-
-@app.post("/api/login")
-def api_login():
-    body = request.get_json(silent=True)
-
-    if not isinstance(body, dict):
-        return json_response({
-            "authenticated": False,
-            "message": "بيانات الطلب غير صحيحة."
-        }, 400)
-
-    username = str(body.get("username", "")).strip()
-    password = str(body.get("password", ""))
-
-    if not username or not password:
-        return json_response({
-            "authenticated": False,
-            "message": "أدخل اسم المستخدم وكلمة المرور."
-        }, 400)
-
-    if len(username) > 200 or len(password) > 500:
-        return json_response({
-            "authenticated": False,
-            "message": "طول بيانات الدخول غير مقبول."
-        }, 400)
-
-    try:
-        token = call_earthlink_login(username, password)
-
-        valid, check_result = check_earthlink_session(token)
-
-        if not valid:
-            logging.warning(
-                "Earthlink session validation failed for login."
-            )
-
-            return json_response({
-                "authenticated": False,
-                "message": (
-                    "تم استلام Token لكن تعذر تأكيد صلاحية الجلسة."
-                )
-            }, 401)
-
-        sid = create_session(token, username)
-
-        response = json_response({
-            "authenticated": True,
-            "message": "تم تسجيل الدخول بنجاح."
-        })
-
-        response.set_cookie(
-            COOKIE_NAME,
-            sid,
-            httponly=True,
-            secure=COOKIE_SECURE,
-            samesite="Lax",
-            max_age=60 * 60 * 12,
-            path="/"
-        )
-
-        return response
-
-    except requests.Timeout:
-        return json_response({
-            "authenticated": False,
-            "message": "انتهت مهلة الاتصال بخادم Earthlink."
-        }, 504)
-
-    except requests.RequestException:
-        logging.exception("Earthlink network error during login.")
-
-        return json_response({
-            "authenticated": False,
-            "message": "تعذر الاتصال بخدمة Earthlink."
-        }, 502)
-
-    except ValueError as error:
-        logging.warning("Earthlink login rejected: %s", error)
-
-        return json_response({
-            "authenticated": False,
-            "message": str(error)
-        }, 401)
-
-    except Exception:
-        logging.exception("Unexpected login error.")
-
-        return json_response({
-            "authenticated": False,
-            "message": "حدث خطأ داخلي أثناء تسجيل الدخول."
-        }, 500)
-
-
-@app.get("/api/me")
-def api_me():
-    sid = get_session_id()
-    session_data = get_session()
-
-    if not sid or not session_data:
-        return json_response({
-            "authenticated": False,
-            "message": "لا توجد جلسة دخول صالحة."
-        }, 401)
-
-    token = session_data.get("token")
-
-    if not token:
-        remove_session(sid)
-
-        return json_response({
-            "authenticated": False,
-            "message": "الجلسة غير صالحة. سجّل الدخول مجدداً."
-        }, 401)
-
-    try:
-        valid, check_result = check_earthlink_session(token)
-
-        if not valid:
-            remove_session(sid)
-
-            response = json_response({
-                "authenticated": False,
-                "message": "انتهت صلاحية جلسة Earthlink."
-            }, 401)
-
-            response.delete_cookie(COOKIE_NAME, path="/")
-            return response
-
-        user_data = get_earthlink_user_data(token)
-
-        with SESSIONS_LOCK:
-            if sid in SESSIONS:
-                SESSIONS[sid]["last_seen"] = (
-                    datetime.now(timezone.utc).isoformat()
-                )
-
-        return json_response({
-            "authenticated": True,
-            "user": user_data,
-            "server_time": datetime.now(timezone.utc).isoformat()
-        })
-
-    except PermissionError as error:
-        remove_session(sid)
-
-        response = json_response({
-            "authenticated": False,
-            "message": str(error)
-        }, 401)
-
-        response.delete_cookie(COOKIE_NAME, path="/")
-        return response
-
-    except requests.Timeout:
-        return json_response({
-            "authenticated": True,
-            "message": "انتهت مهلة طلب تحديث البيانات."
-        }, 504)
-
-    except requests.RequestException:
-        logging.exception("Earthlink network error during account refresh.")
-
-        return json_response({
-            "authenticated": True,
-            "message": "تعذر الاتصال بخادم Earthlink حالياً."
-        }, 502)
-
-    except Exception:
-        logging.exception("Unexpected account data error.")
-
-        return json_response({
-            "authenticated": True,
-            "message": "حدث خطأ أثناء قراءة بيانات الحساب."
-        }, 500)
-
-
-@app.post("/api/logout")
-def api_logout():
-    sid = get_session_id()
-    remove_session(sid)
-
-    response = json_response({
-        "success": True,
-        "message": "تم تسجيل الخروج."
-    })
-
-    response.delete_cookie(COOKIE_NAME, path="/")
-    return response
-
-
-# =========================================================
-# SECURITY HEADERS
-# =========================================================
-
-@app.after_request
-def security_headers(response):
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = (
-        "camera=(), microphone=(), geolocation=()"
+def earthlink_login(username: str, password: str) -> str:
+    form = urllib.parse.urlencode({
+        "grant_type": "password",
+        "username": username,
+        "password": password,
+        "Logintype": "0",
+    }).encode("utf-8")
+    _, payload = _request(
+        TOKEN_URL,
+        method="POST",
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        body=form,
     )
-    response.headers["Cache-Control"] = "no-store"
+    token = _find_token(payload)
+    if not token:
+        detail = ""
+        if isinstance(payload, dict):
+            detail = str(payload.get("error_description") or payload.get("message") or payload.get("error") or "")
+        raise EarthlinkError("لم يرجع Earthlink رمز دخول صالحاً. " + detail)
+    return token
 
-    return response
+
+def earthlink_account(token: str) -> dict[str, Any]:
+    auth = {"Authorization": "Bearer " + token}
+    check_body = b"{}"
+    _request(
+        CHECK_SESSION_URL,
+        method="POST",
+        headers={"Content-Type": "application/json", **auth},
+        body=check_body,
+    )
+    _, payload = _request(USER_DATA_URL, method="GET", headers=auth)
+    return _unwrap_account(payload)
 
 
-# =========================================================
-# START SERVER
-# =========================================================
+def _clean_expired_sessions() -> None:
+    now = time.time()
+    with _sessions_lock:
+        expired = [sid for sid, item in _sessions.items() if now - item["created"] > SESSION_TTL]
+        for sid in expired:
+            _sessions.pop(sid, None)
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "EARTHLINK-PRO/2.0"
+
+    def log_message(self, fmt: str, *args: Any) -> None:
+        # Avoid logging request bodies, credentials, or tokens.
+        print("[EARTHLINK-PRO] " + (fmt % args))
+
+    def _send(self, status: int, payload: Any, extra_headers: dict[str, str] | None = None) -> None:
+        raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(raw)))
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        if extra_headers:
+            for key, value in extra_headers.items():
+                self.send_header(key, value)
+        self.end_headers()
+        self.wfile.write(raw)
+
+    def _read_json(self) -> dict[str, Any]:
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            length = 0
+        if length < 1 or length > 64 * 1024:
+            raise ValueError("حجم الطلب غير صالح.")
+        try:
+            value = json.loads(self.rfile.read(length).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            raise ValueError("صيغة JSON غير صالحة.")
+        if not isinstance(value, dict):
+            raise ValueError("محتوى الطلب يجب أن يكون كائن JSON.")
+        return value
+
+    def _session_id(self) -> str | None:
+        cookie = self.headers.get("Cookie", "")
+        for part in cookie.split(";"):
+            key, sep, value = part.strip().partition("=")
+            if sep and key == SESSION_COOKIE:
+                return value
+        return None
+
+    def _session(self) -> tuple[str | None, dict[str, Any] | None]:
+        sid = self._session_id()
+        if not sid:
+            return None, None
+        with _sessions_lock:
+            item = _sessions.get(sid)
+        if item and time.time() - item["created"] <= SESSION_TTL:
+            return sid, item
+        return sid, None
+
+    def _cookie(self, sid: str, clear: bool = False) -> str:
+        secure = self.headers.get("X-Forwarded-Proto", "").lower() == "https"
+        bits = [f"{SESSION_COOKIE}={'' if clear else sid}", "Path=/", "HttpOnly", "SameSite=Lax"]
+        if secure:
+            bits.append("Secure")
+        if clear:
+            bits.append("Max-Age=0")
+        else:
+            bits.append(f"Max-Age={SESSION_TTL}")
+        return "; ".join(bits)
+
+    def do_GET(self) -> None:
+        path = urllib.parse.urlsplit(self.path).path
+        if path in ("/", "/index.html"):
+            file_path = ROOT / "index.html"
+            try:
+                raw = file_path.read_bytes()
+            except OSError:
+                self.send_error(404, "index.html not found")
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(raw)))
+            self.send_header("Cache-Control", "no-cache")
+            self.end_headers()
+            self.wfile.write(raw)
+            return
+
+        if path == "/health":
+            self._send(200, {"ok": True, "service": "EARTHLINK PRO"})
+            return
+
+        if path == "/api/me":
+            sid, session = self._session()
+            if not session:
+                self._send(200, {"authenticated": False})
+                return
+            try:
+                account = earthlink_account(session["token"])
+                self._send(200, {"authenticated": True, "user": account})
+            except EarthlinkError as exc:
+                message = str(exc)
+                if "401" in message or "403" in message or "رمز" in message:
+                    with _sessions_lock:
+                        _sessions.pop(sid, None)
+                    self._send(200, {"authenticated": False, "message": "انتهت جلسة Earthlink، سجّل الدخول مجدداً."},
+                               {"Set-Cookie": self._cookie(sid or "", clear=True)})
+                else:
+                    self._send(502, {"error": message, "authenticated": True})
+            return
+
+        self.send_error(404)
+
+    def do_POST(self) -> None:
+        path = urllib.parse.urlsplit(self.path).path
+        if path == "/api/login":
+            try:
+                body = self._read_json()
+                username = str(body.get("username", "")).strip()
+                password = str(body.get("password", ""))
+                if not username or not password:
+                    self._send(400, {"authenticated": False, "message": "أدخل اسم المستخدم وكلمة المرور."})
+                    return
+                token = earthlink_login(username, password)
+                account = earthlink_account(token)
+                sid = secrets.token_urlsafe(32)
+                _clean_expired_sessions()
+                with _sessions_lock:
+                    _sessions[sid] = {"token": token, "created": time.time()}
+                self._send(200, {"authenticated": True, "user": account},
+                           {"Set-Cookie": self._cookie(sid)})
+            except ValueError as exc:
+                self._send(400, {"authenticated": False, "message": str(exc)})
+            except EarthlinkError as exc:
+                self._send(401, {"authenticated": False, "message": str(exc)})
+            except Exception:
+                self._send(500, {"authenticated": False, "message": "حدث خطأ داخلي أثناء تسجيل الدخول."})
+            return
+
+        if path == "/api/logout":
+            sid, _ = self._session()
+            if sid:
+                with _sessions_lock:
+                    _sessions.pop(sid, None)
+            self._send(200, {"ok": True}, {"Set-Cookie": self._cookie(sid or "", clear=True)})
+            return
+
+        self._send(404, {"error": "Not found"})
+
+
+def main() -> None:
+    httpd = ThreadingHTTPServer((HOST, PORT), Handler)
+    httpd.daemon_threads = True
+    print(f"EARTHLINK PRO server listening on http://{HOST}:{PORT}", flush=True)
+    print("Earthlink credentials and access tokens are kept in memory only.", flush=True)
+    try:
+        httpd.serve_forever(poll_interval=0.5)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        httpd.server_close()
+
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", "5000"))
-
-    print("=" * 58)
-    print("EARTHLINK PRO - SUBSCRIBER COMMAND CENTER")
-    print("=" * 58)
-    print("Server: http://127.0.0.1:" + str(port))
-    print("API:    " + EARTHLINK_BASE)
-    print("=" * 58)
-
-    app.run(
-        host="0.0.0.0",
-        port=port,
-        debug=False,
-        threaded=True
-    )
+    main()
