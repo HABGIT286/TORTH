@@ -1,46 +1,92 @@
-
-name: EARTHLINK PRO - Deploy
+name: EARTHLINK PRO - Start Python Server
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  schedule:
+    # Restart the temporary GitHub runner regularly.
+    - cron: "0 */5 * * *"
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: github-pages
+  group: earthlink-pro-public-server
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
+  start-server:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 350
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate Website
-        run: |
-          test -f index.html
-          echo "EARTHLINK PRO website found."
-
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Website
-        uses: actions/upload-pages-artifact@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          path: .
+          python-version: "3.12"
 
-      - name: Deploy Website
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Install Cloudflare Quick Tunnel
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64" -o /tmp/cloudflared
+          sudo install -m 0755 /tmp/cloudflared /usr/local/bin/cloudflared
+          cloudflared --version
+
+      - name: Start Earthlink backend and public HTTPS tunnel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python server.py > /tmp/earthlink-server.log 2>&1 &
+          SERVER_PID=$!
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:8080/health
+
+          cloudflared tunnel --no-autoupdate --url http://127.0.0.1:8080 > /tmp/earthlink-tunnel.log 2>&1 &
+          TUNNEL_PID=$!
+
+          PUBLIC_URL=""
+          for attempt in $(seq 1 60); do
+            PUBLIC_URL=$(grep -Eo 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' /tmp/earthlink-tunnel.log | head -n 1 || true)
+            if [ -n "$PUBLIC_URL" ]; then
+              break
+            fi
+            sleep 2
+          done
+
+          if [ -z "$PUBLIC_URL" ]; then
+            echo "Cloudflare Quick Tunnel did not return a public URL."
+            cat /tmp/earthlink-tunnel.log
+            kill "$SERVER_PID" "$TUNNEL_PID" 2>/dev/null || true
+            exit 1
+          fi
+
+          {
+            echo "## EARTHLINK PRO is running"
+            echo
+            echo "**Open the website:** ${PUBLIC_URL}"
+            echo
+            echo "The same URL serves the website and its /api endpoints."
+            echo "This temporary URL changes when the workflow restarts."
+            echo "The GitHub-hosted runner is temporary; this run is limited to 350 minutes."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "Public website: $PUBLIC_URL"
+          echo "Backend health: $PUBLIC_URL/health"
+
+          # Keep both processes alive until GitHub stops this temporary runner.
+          while kill -0 "$SERVER_PID" 2>/dev/null && kill -0 "$TUNNEL_PID" 2>/dev/null; do
+            sleep 20
+          done
+
+          echo "Server or tunnel stopped unexpectedly."
+          cat /tmp/earthlink-server.log
+          cat /tmp/earthlink-tunnel.log
+          exit 1
