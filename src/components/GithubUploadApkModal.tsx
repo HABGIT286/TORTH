@@ -333,18 +333,39 @@ git push origin main`;
                       </div>
                     </div>
 
-                    <div className="neu-inset p-3 rounded-2xl bg-emerald-950/30 border border-emerald-500/20 flex items-start gap-3">
-                      <span className="w-6 h-6 rounded-full bg-emerald-600/40 text-emerald-200 font-bold flex items-center justify-center shrink-0 text-xs">
-                        ٣
-                      </span>
-                      <div className="space-y-1">
-                        <span className="font-bold text-emerald-300 block">اختيار Source: GitHub Actions</span>
-                        <p className="text-[11px] text-slate-300 leading-relaxed">
-                          تحت قسم <strong>Build and deployment</strong>، في قائمة <strong>Source</strong>، قم باختيار: <strong className="text-white bg-purple-900/50 px-1.5 py-0.5 rounded font-mono">GitHub Actions</strong>.
-                        </p>
-                        <p className="text-[10px] text-cyan-300 font-semibold mt-1">
-                          ✨ قمنا بإضافة ملف <code className="font-mono">deploy-pages.yml</code> في مشروعك؛ بمجرد اختيار GitHub Actions سيبدأ البناء تلقائياً ويصبح الموقع حياً خلال دقيقة واحدة!
-                        </p>
+                    <div className="neu-inset p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/20 space-y-2.5">
+                      <div className="flex items-start gap-3">
+                        <span className="w-6 h-6 rounded-full bg-emerald-600/40 text-emerald-200 font-bold flex items-center justify-center shrink-0 text-xs">
+                          ٣
+                        </span>
+                        <div className="space-y-1">
+                          <span className="font-bold text-emerald-300 block">اختيار طريقة النشر المناسبة لك (نظام هجين مرن):</span>
+                          <p className="text-[11px] text-slate-300 leading-relaxed">
+                            يوفر مشروعك طريقتين هجينتين للتشغيل كموقع حي:
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div className="p-2.5 rounded-xl bg-black/60 border border-emerald-500/30 space-y-1">
+                          <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs font-titles">
+                            <Zap className="w-3.5 h-3.5" />
+                            <span>الطريقة 1 (الفورية - مجلد /docs):</span>
+                          </div>
+                          <p className="text-[10px] text-slate-300 leading-relaxed">
+                            اختر <strong>Deploy from a branch</strong> ثم حدد الفرع <strong>main</strong> والمجلد <code className="bg-emerald-950/80 text-emerald-300 px-1 py-0.5 rounded font-mono">/docs</code> واضغط <strong>Save</strong>. يعمل فوراً في ثوانٍ لأن المجلد مبني وجاهز مسبقاً!
+                          </p>
+                        </div>
+
+                        <div className="p-2.5 rounded-xl bg-black/60 border border-purple-500/30 space-y-1">
+                          <div className="flex items-center gap-1.5 text-purple-300 font-bold text-xs font-titles">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>الطريقة 2 (التلقائية - Actions):</span>
+                          </div>
+                          <p className="text-[10px] text-slate-300 leading-relaxed">
+                            اختر <strong>GitHub Actions</strong> في قائمة Source. سيتكفل ملف <code className="bg-purple-950/80 text-purple-200 px-1 py-0.5 rounded font-mono">deploy-pages.yml</code> المرفق ببناء الموقع ونشره تلقائياً عند كل رفع!
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>

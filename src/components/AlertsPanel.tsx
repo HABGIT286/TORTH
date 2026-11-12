@@ -25,6 +25,7 @@ import {
   Flame,
   ChevronLeft
 } from 'lucide-react';
+import { sendDiscordNotification, sendTelegramNotification } from '../services/notificationService';
 
 interface AlertsPanelProps {
   data: SubscriberData;
@@ -239,13 +240,9 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
 
     try {
       if (instantChannel === 'discord' || instantChannel === 'both') {
-        await fetch('/api/notify/discord', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportText: reportContent,
-            message: `⚡ **تنبيه إيرثلنك فوري ومباشر** عبر Webhook للمشترك \`${data.userID}\`:\n\`\`\`text\n${reportContent}\n\`\`\``
-          })
+        await sendDiscordNotification({
+          reportText: reportContent,
+          message: `⚡ **تنبيه إيرثلنك فوري ومباشر** عبر Webhook للمشترك \`${data.userID}\`:\n\`\`\`text\n${reportContent}\n\`\`\``
         });
       }
 
@@ -259,11 +256,7 @@ export const AlertsPanel: React.FC<AlertsPanelProps> = ({
           `🏢 الوكيل: <b>${data.agentName}</b>\n\n` +
           `تم الإرسال فورياً من تطبيق المشتركين.`;
 
-        await fetch('/api/notify/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: tgText })
-        });
+        await sendTelegramNotification({ text: tgText });
       }
 
       triggerLuxuryCelebration();

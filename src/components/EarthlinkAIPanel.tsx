@@ -27,6 +27,7 @@ import {
   CheckCircle2,
   Trash2
 } from 'lucide-react';
+import { sendDiscordNotification, sendTelegramNotification } from '../services/notificationService';
 
 interface EarthlinkAIPanelProps {
   data: SubscriberData;
@@ -130,30 +131,22 @@ IP الحساب: ${data.userIP}
     if (aiSchedule.targetChannel === 'both' || aiSchedule.targetChannel === 'discord') {
       const webhookUrl = aiSchedule.discordWebhookUrl?.trim() || undefined;
       tasks.push(
-        fetch('/api/notify/discord', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            reportText: messageContent,
-            message: `🚨 **تنبيه عاجل مجدول (Earthlink AI Scheduler):**\n\`\`\`text\n${messageContent}\n\`\`\``,
-            webhookUrl: webhookUrl
-          })
-        }).catch(err => console.error('Discord dispatch error:', err))
+        sendDiscordNotification({
+          reportText: messageContent,
+          message: `🚨 **تنبيه عاجل مجدول (Earthlink AI Scheduler):**\n\`\`\`text\n${messageContent}\n\`\`\``,
+          webhookUrl: webhookUrl
+        })
       );
     }
 
     // Telegram Dispatch
     if (aiSchedule.targetChannel === 'both' || aiSchedule.targetChannel === 'telegram') {
       tasks.push(
-        fetch('/api/notify/telegram', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: messageContent,
-            botToken: aiSchedule.telegramBotToken?.trim() || undefined,
-            chatId: aiSchedule.telegramChatId?.trim() || undefined
-          })
-        }).catch(err => console.error('Telegram dispatch error:', err))
+        sendTelegramNotification({
+          text: `🚨 <b>تنبيه عاجل مجدول (Earthlink AI Scheduler)</b>\n\n${messageContent}`,
+          botToken: aiSchedule.telegramBotToken?.trim() || undefined,
+          chatId: aiSchedule.telegramChatId?.trim() || undefined
+        })
       );
     }
 

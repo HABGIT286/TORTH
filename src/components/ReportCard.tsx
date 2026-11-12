@@ -21,6 +21,7 @@ import {
   ExternalLink,
   Info
 } from 'lucide-react';
+import { sendDiscordNotification } from '../services/notificationService';
 
 interface ReportCardProps {
   data: SubscriberData;
@@ -99,16 +100,12 @@ export const ReportCard: React.FC<ReportCardProps> = ({
     playHapticSound('send');
 
     try {
-      const res = await fetch('/api/notify/discord', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reportText: reportText,
-          message: `📊 **تقرير اشتراك Earthlink الفعلي** للمشترك \`${data.userID}\`:\n\`\`\`text\n${reportText}\n\`\`\``
-        })
+      const ok = await sendDiscordNotification({
+        reportText: reportText,
+        message: `📊 **تقرير اشتراك Earthlink الفعلي** للمشترك \`${data.userID}\`:\n\`\`\`text\n${reportText}\n\`\`\``
       });
 
-      if (res.ok) {
+      if (ok) {
         setSentSuccess(true);
         triggerLuxuryCelebration();
         setTimeout(() => setSentSuccess(false), 4000);
