@@ -8,6 +8,7 @@ No credentials or access tokens are written to disk.
 from __future__ import annotations
 
 import json
+import mimetypes
 import os
 import secrets
 import threading
@@ -224,23 +225,28 @@ class Handler(BaseHTTPRequestHandler):
             bits.append(f"Max-Age={SESSION_TTL}")
         return "; ".join(bits)
 
+    def _serve_file(self, file_path: Path) -> bool:
+        if not file_path.is_file():
+            return False
+        try:
+            raw = file_path.read_bytes()
+        except OSError:
+            return False
+        mime_type, _ = mimetypes.guess_type(str(file_path))
+        if not mime_type:
+            mime_type = "text/html" if file_path.suffix == ".html" else "application/octet-stream"
+        if "text/" in mime_type or mime_type in ("application/javascript", "application/json"):
+            mime_type += "; charset=utf-8"
+        self.send_response(200)
+        self.send_header("Content-Type", mime_type)
+        self.send_header("Content-Length", str(len(raw)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(raw)
+        return True
+
     def do_GET(self) -> None:
         path = urllib.parse.urlsplit(self.path).path
-        if path in ("/", "/index.html"):
-            file_path = ROOT / "index.html"
-            try:
-                raw = file_path.read_bytes()
-            except OSError:
-                self.send_error(404, "index.html not found")
-                return
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(raw)))
-            self.send_header("Cache-Control", "no-cache")
-            self.end_headers()
-            self.wfile.write(raw)
-            return
-
         if path == "/health":
             self._send(200, {"ok": True, "service": "EARTHLINK PRO"})
             return
@@ -264,11 +270,32 @@ class Handler(BaseHTTPRequestHandler):
                     self._send(502, {"error": message, "authenticated": True})
             return
 
+        if path in ("/", "/index.html"):
+            for candidate in (
+                ROOT / "dist" / "index.html",
+                ROOT / "docs" / "index.html",
+                ROOT / "indexx.html",
+                ROOT / "public" / "standalone_index.html",
+                ROOT / "index.html",
+            ):
+                if self._serve_file(candidate):
+                    return
+            self.send_error(404, "index.html not found")
+            return
+
+        # Direct file lookup across ROOT, dist, docs, public
+        clean_path = path.lstrip("/")
+        for base_dir in (ROOT / "dist", ROOT / "docs", ROOT / "public", ROOT):
+            target = base_dir / clean_path
+            if target.is_file():
+                if self._serve_file(target):
+                    return
+
         self.send_error(404)
 
     def do_POST(self) -> None:
         path = urllib.parse.urlsplit(self.path).path
-        if path == "/api/login":
+        if path in ("/api/login", "/api/earthlink/token"):
             try:
                 body = self._read_json()
                 username = str(body.get("username", "")).strip()
@@ -282,7 +309,7 @@ class Handler(BaseHTTPRequestHandler):
                 _clean_expired_sessions()
                 with _sessions_lock:
                     _sessions[sid] = {"token": token, "created": time.time()}
-                self._send(200, {"authenticated": True, "user": account},
+                self._send(200, {"authenticated": True, "access_token": token, "user": account},
                            {"Set-Cookie": self._cookie(sid)})
             except ValueError as exc:
                 self._send(400, {"authenticated": False, "message": str(exc)})
@@ -290,6 +317,34 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(401, {"authenticated": False, "message": str(exc)})
             except Exception:
                 self._send(500, {"authenticated": False, "message": "حدث خطأ داخلي أثناء تسجيل الدخول."})
+            return
+
+        if path == "/api/notify/discord":
+            try:
+                body = self._read_json()
+                webhook = body.get("webhookUrl") or "https://discord.com/api/webhooks/1555280750654398528/m7pjebcPl7DL95_KdyoEDcHspnG9Rk3mOfITsMhMJcgtGfave55W_LQQZ6pk0nDEfcIt"
+                msg = body.get("message") or body.get("reportText") or "Earthlink VIP Notice"
+                req_data = json.dumps({"content": msg}).encode("utf-8")
+                req = urllib.request.Request(webhook, data=req_data, headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    self._send(200, {"ok": True})
+            except Exception as e:
+                self._send(500, {"error": str(e)})
+            return
+
+        if path == "/api/notify/telegram":
+            try:
+                body = self._read_json()
+                bot_token = body.get("botToken") or "8873866209:AAExp-CQKB8-6WDARWcotQKm8HUEpIomeKM"
+                chat_id = body.get("chatId") or "7753969972"
+                text = body.get("text") or "Earthlink VIP Alert"
+                url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+                req_data = json.dumps({"chat_id": chat_id, "text": text, "parse_mode": "HTML"}).encode("utf-8")
+                req = urllib.request.Request(url, data=req_data, headers={"Content-Type": "application/json"}, method="POST")
+                with urllib.request.urlopen(req, timeout=10) as r:
+                    self._send(200, {"ok": True})
+            except Exception as e:
+                self._send(500, {"error": str(e)})
             return
 
         if path == "/api/logout":

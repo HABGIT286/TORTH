@@ -57,10 +57,10 @@ jobs:
           echo "✅ تثبيت منصة أندرويد 15 (API 35) وأدوات البناء 35.0.0..."
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-35" "build-tools;35.0.0" "platform-tools"
 
-      - name: ⚡ Setup Node.js 20
+      - name: ⚡ Setup Node.js (LTS 22)
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: 🛠️ Install NPM Dependencies
         run: npm install --legacy-peer-deps
